@@ -260,13 +260,13 @@ function App() {
                                 to="/notams"
                                 className={({ isActive }) =>
                                     `flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm transition-colors ${isActive
-                                        ? 'bg-blue-600/20 text-blue-400 font-semibold border border-blue-500/30 shadow-sm'
+                                        ? 'bg-red-600/20  text-black-400 font-semibold border border-red-500/30 shadow-sm'
                                         : 'text-slate-400 font-medium hover:text-slate-300 hover:bg-slate-800 border border-transparent'
                                     }`
                                 }
                             >
                                 <Database size={13} />
-                                <span className="hidden sm:inline">Airspace Closed</span>
+                                <span className="hidden sm:inline">Airspace Restrictions</span>
                             </NavLink>
                         </nav>
 

@@ -78,7 +78,7 @@ const NotamDetailCard: React.FC<{ notam: NotamItem; rank: number }> = ({ notam, 
     const stripCls = SEVERITY_STRIP[meta.severity] ?? SEVERITY_STRIP.info;
     const pillCls = SEVERITY_PILL[meta.severity] ?? SEVERITY_PILL.info;
 
-    const rankLabel = rank === 0 ? 'PRIMARY' : rank === 1 ? 'SECONDARY' : rank === 2 ? 'ADVISORY' : `#${rank + 1}`;
+    const rankLabel = `#${rank + 1}`;
     const rankColor = rank === 0 ? 'text-red-400' : rank === 1 ? 'text-amber-400' : 'text-slate-500';
 
     return (
