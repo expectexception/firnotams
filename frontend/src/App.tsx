@@ -47,7 +47,7 @@ function App() {
 
     // Load GeoJSON once
     useEffect(() => {
-        fetch('/fir.geojson')
+        fetch('fir.geojson')
             .then(res => res.json())
             .then((data) => {
                 setGeoJson(data as GeoJSON.FeatureCollection);
@@ -59,7 +59,7 @@ function App() {
 
     const loadAllData = useCallback(async (isManual = false) => {
         if (!configLoaded || airports.length === 0) {
-            console.log('[DEBUG] Skipping loadAllData: Config not ready or no airports.');
+            // console.log('[DEBUG] Skipping loadAllData: Config not ready or no airports.');
             return;
         }
 
@@ -82,7 +82,7 @@ function App() {
                 return;
             }
 
-            console.log(`[DEBUG] Fetching NOTAMs for ${allAirportIcaos.length + allFirIcaos.length} locations...`);
+            // console.log(`[DEBUG] Fetching NOTAMs for ${allAirportIcaos.length + allFirIcaos.length} locations...`);
 
             const [notamRes, firRes] = await Promise.allSettled([
                 fetchBulkNotams([...allAirportIcaos, ...allFirIcaos], isManual),
@@ -232,7 +232,7 @@ function App() {
                     <div className="flex items-center gap-2 sm:gap-3 py-2 sm:py-3">
                         {/* Logo & Badge */}
                         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-                            <img src="/logo.png" alt="Logo" className="h-7 sm:h-8 w-auto object-contain" />
+                            <img src="logo.png" alt="Logo" className="h-7 sm:h-8 w-auto object-contain" />
                             <div className="flex items-center gap-1.5">
                                 <span className="relative flex h-2 w-2 mb-0.5">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>

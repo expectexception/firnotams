@@ -813,14 +813,14 @@ export function selectBestFirNotams(rawNotams: NotamItem[]): SelectionResult {
     debug.surviving = pool.length;
 
     // ── Verbose debug logging ──
-    console.debug(
-        `[NOTAM Pipeline] ${debug.totalInput} input → ${debug.surviving} surviving |`,
-        `replaced:${debug.removedByReplacement}`,
-        `cancelled:${debug.removedByCancellation}`,
-        `expired:${debug.removedByDate}`,
-        `noise:${debug.removedByNoise}`,
-        pool.length > 0 ? `| survivors: ${pool.map(n => n.id).join(', ')}` : '| NO SURVIVORS'
-    );
+    // console.debug(
+    //     `[NOTAM Pipeline] ${debug.totalInput} input → ${debug.surviving} surviving |`,
+    //     `replaced:${debug.removedByReplacement}`,
+    //     `cancelled:${debug.removedByCancellation}`,
+    //     `expired:${debug.removedByDate}`,
+    //     `noise:${debug.removedByNoise}`,
+    //     pool.length > 0 ? `| survivors: ${pool.map(n => n.id).join(', ')}` : '| NO SURVIVORS'
+    // );
 
     if (pool.length === 0) {
         // If we had raw input NOTAMs but all were filtered out, return 'unknown'

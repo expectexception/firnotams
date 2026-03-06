@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
+    base: '/ifoaalerts/',
     plugins: [react()],
     server: {
         port: 5173,
@@ -9,7 +10,7 @@ export default defineConfig({
         allowedHosts: true,
         proxy: {
             '/api': {
-                target: 'https://western-depending-postage-builders.trycloudflare.com',
+                target: 'https://firnotams.onrender.com',
                 changeOrigin: true,
             }
         }

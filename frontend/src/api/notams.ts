@@ -1,6 +1,8 @@
 import { BulkNotamResponse, BulkFirResponse, ConfigResponse } from '../types';
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.PROD 
+    ? 'https://firnotams.onrender.com/api' 
+    : '/api';
 
 export async function fetchBulkNotams(icaos: string[], forceRefresh = false): Promise<BulkNotamResponse> {
     let url = `${API_BASE}/notams/bulk?locations=${icaos.join(',')}`;
