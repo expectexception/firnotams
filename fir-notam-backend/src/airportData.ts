@@ -75,6 +75,9 @@ export const AIRPORTS: AirportInfo[] = [
 
     // Azerbaijan airports
     { icao: 'UBBB', name: 'Baku Heydar Aliyev International', country: 'Azerbaijan', countryFlag: '🇦🇿', fir: 'UBBA', isCapital: true },
+
+    // UDDD airports
+    { icao: 'UDDD', name: 'Yerevan Zvartnots International', country: 'UDDD', countryFlag: '🇦🇲', fir: 'UDDD', isCapital: true },
 ];
 
 export const FIRS: FirInfo[] = [
@@ -97,6 +100,20 @@ export const FIRS: FirInfo[] = [
     { icao: 'OYSC', name: "Sana'a FIR", geojsonCode: 'OYSC' },
     { icao: 'HECC', name: 'Cairo FIR', geojsonCode: 'HECC' },
     { icao: 'UBBA', name: 'Baku FIR', geojsonCode: 'UBBA' },
+
+    // { icao: 'UDDD', name: 'Yerevan FIR', geojsonCode: 'UDDD' },
+    // { icao: 'UTAV', name: 'Turkmenabat FIR', geojsonCode: 'UTAV' },
+    // { icao: 'UTAA', name: 'Ashgabat FIR', geojsonCode: 'UTAA' },
+    // { icao: 'UTAT', name: 'DASHOGUZ FIR', geojsonCode: 'UTAT' },
+    // { icao: 'UTAK', name: 'TURKMENBASHI FIR', geojsonCode: 'UTAK' },
+
+    // { icao: 'LTAA', name: 'Ankara FIR', geojsonCode: 'LTAA' },
+    // { icao: 'LTBB', name: 'Istanbul FIR', geojsonCode: 'LTBB' },
+    // { icao: 'VIDF', name: 'Delhi FIR', geojsonCode: 'VIDF' },
+    // { icao: 'VABF', name: 'Mumbai FIR', geojsonCode: 'VABF' },
+    // { icao: 'VABF', name: 'Mumbai FIR', geojsonCode: 'VABF' },
+    // { icao: 'ZSHA', name: 'Shanghai FIR', geojsonCode: 'ZSHA' },
+
 ];
 
 export function getFirForAirport(icao: string): string | null {

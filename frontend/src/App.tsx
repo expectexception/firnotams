@@ -225,113 +225,117 @@ function App() {
     }, [firs, firData, notamData]);
 
     return (
-        <div className="h-screen bg-notam-bg flex flex-col overflow-hidden">
+        <div className="h-screen bg-notam-bg flex flex-col overflow-x-hidden">
             {/* ── HEADER ─────────────────────────────────────────────── */}
             <header className="flex-shrink-0 z-50 bg-notam-bg/95 backdrop-blur-md border-b border-notam-border/60">
-                <div className="max-w-[1600px] mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
-                    {/* Logo & Badge */}
-                    <div className="flex items-center gap-4 flex-shrink-0 mr-6">
-                        <img src="/logo.png" alt="Logo" className="h-8 w-auto object-contain" />
-                        <div className="flex items-center gap-2">
-                            <span className="relative flex h-2 w-2 mb-0.5">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                            </span>
-                            <span className="text-[25px] font-black tracking-[-0.02em] text-red-500 uppercase leading-none">ALERTS</span>
+                <div className="max-w-[1600px] mx-auto px-3 sm:px-4">
+                    <div className="flex items-center gap-2 sm:gap-3 py-2 sm:py-3">
+                        {/* Logo & Badge */}
+                        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+                            <img src="/logo.png" alt="Logo" className="h-7 sm:h-8 w-auto object-contain" />
+                            <div className="flex items-center gap-1.5">
+                                <span className="relative flex h-2 w-2 mb-0.5">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                </span>
+                                <span className="text-[18px] sm:text-[25px] font-black tracking-[-0.02em] text-red-500 uppercase leading-none">ALERTS</span>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Navigation */}
-                    <nav className="flex items-center gap-2 mr-4 bg-slate-900 border border-slate-800 p-1 rounded-lg">
-                        <NavLink
-                            to="/"
-                            className={({ isActive }) =>
-                                `flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors ${isActive
-                                    ? 'bg-blue-600/20 text-blue-400 font-semibold border border-blue-500/30 shadow-sm'
-                                    : 'text-slate-400 font-medium hover:text-slate-300 hover:bg-slate-800 border border-transparent'
-                                }`
-                            }
+                        {/* Navigation */}
+                        <nav className="flex items-center gap-1 bg-slate-900 border border-slate-800 p-1 rounded-lg flex-shrink-0">
+                            <NavLink
+                                to="/"
+                                className={({ isActive }) =>
+                                    `flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm transition-colors ${isActive
+                                        ? 'bg-blue-600/20 text-blue-400 font-semibold border border-blue-500/30 shadow-sm'
+                                        : 'text-slate-400 font-medium hover:text-slate-300 hover:bg-slate-800 border border-transparent'
+                                    }`
+                                }
+                            >
+                                <MapIcon size={13} />
+                                <span className="hidden sm:inline">Home</span>
+                            </NavLink>
+                            <NavLink
+                                to="/notams"
+                                className={({ isActive }) =>
+                                    `flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm transition-colors ${isActive
+                                        ? 'bg-blue-600/20 text-blue-400 font-semibold border border-blue-500/30 shadow-sm'
+                                        : 'text-slate-400 font-medium hover:text-slate-300 hover:bg-slate-800 border border-transparent'
+                                    }`
+                                }
+                            >
+                                <Database size={13} />
+                                <span className="hidden sm:inline">Airspace Closed</span>
+                            </NavLink>
+                        </nav>
+
+                        {/* Region label — desktop only */}
+                        <div className="hidden lg:flex items-center gap-1.5">
+                            <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                            <span className="text-xs text-notam-muted font-medium">Middle East · South Asia · Mediterranean</span>
+                        </div>
+
+                        {/* Spacer */}
+                        <div className="flex-1" />
+
+                        {/* Status counts — desktop only */}
+                        {!loading && (
+                            <div className="hidden lg:flex items-center gap-2 mr-2">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mr-1">FIRs:</span>
+                                {statusCounts.red > 0 && (
+                                    <span className="flex items-center gap-1 text-xs bg-red-950/40 border border-red-800/50 text-notam-red px-2 py-0.5 rounded-full">
+                                        <span className="w-1 h-1 rounded-full bg-notam-red animate-pulse" />
+                                        {statusCounts.red}
+                                    </span>
+                                )}
+                                {statusCounts.orange > 0 && (
+                                    <span className="flex items-center gap-1 text-xs bg-orange-950/40 border border-orange-800/50 text-notam-orange px-2 py-0.5 rounded-full">
+                                        <span className="w-1 h-1 rounded-full bg-notam-orange" />
+                                        {statusCounts.orange}
+                                    </span>
+                                )}
+                                {statusCounts.unknown > 0 && (
+                                    <span className="flex items-center gap-1 text-xs bg-slate-800/60 border border-slate-700/50 text-slate-500 px-2 py-0.5 rounded-full">
+                                        <span className="w-1 h-1 rounded-full bg-slate-600" />
+                                        {statusCounts.unknown}
+                                    </span>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Connections indicator */}
+                        {loading ? (
+                            <Wifi size={14} className="text-blue-400 spinner" />
+                        ) : error ? (
+                            <WifiOff size={14} className="text-red-400" />
+                        ) : (
+                            <Wifi size={14} className="text-notam-green" />
+                        )}
+
+                        {/* Last refresh — desktop only */}
+                        {lastRefreshStr && (
+                            <div className="hidden md:flex items-center gap-1 text-[10px] text-notam-muted">
+                                <span>Refreshed {lastRefreshStr}</span>
+                            </div>
+                        )}
+
+                        {/* UTC Clock — hidden on xs to prevent overflow */}
+                        <div className="hidden sm:block">
+                            <UTCClock />
+                        </div>
+
+                        {/* Manual refresh button */}
+                        <button
+                            onClick={() => loadAllData(true)}
+                            disabled={refreshing || loading}
+                            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-blue-900/40 flex-shrink-0"
+                            title="Refresh data"
                         >
-                            <MapIcon size={14} />
-                            Home
-                        </NavLink>
-                        <NavLink
-                            to="/notams"
-                            className={({ isActive }) =>
-                                `flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors ${isActive
-                                    ? 'bg-blue-600/20 text-blue-400 font-semibold border border-blue-500/30 shadow-sm'
-                                    : 'text-slate-400 font-medium hover:text-slate-300 hover:bg-slate-800 border border-transparent'
-                                }`
-                            }
-                        >
-                            <Database size={14} />
-                            Airspace Closed
-                        </NavLink>
-                    </nav>
-
-                    {/* Region label */}
-                    <div className="hidden md:flex items-center gap-1.5">
-                        <div className="w-1 h-4 bg-blue-500 rounded-full" />
-                        <span className="text-xs text-notam-muted font-medium">Middle East · South Asia · Mediterranean</span>
+                            <RefreshCw size={12} className={refreshing ? 'spinner' : ''} />
+                            <span className="hidden sm:inline">{refreshing ? 'Refreshing…' : 'Refresh'}</span>
+                        </button>
                     </div>
-
-                    {/* Spacer */}
-                    <div className="flex-1" />
-
-                    {/* Status counts */}
-                    {!loading && (
-                        <div className="hidden lg:flex items-center gap-2 mr-2">
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mr-1">FIRs:</span>
-                            {statusCounts.red > 0 && (
-                                <span className="flex items-center gap-1 text-xs bg-red-950/40 border border-red-800/50 text-notam-red px-2 py-0.5 rounded-full">
-                                    <span className="w-1 h-1 rounded-full bg-notam-red animate-pulse" />
-                                    {statusCounts.red}
-                                </span>
-                            )}
-                            {statusCounts.orange > 0 && (
-                                <span className="flex items-center gap-1 text-xs bg-orange-950/40 border border-orange-800/50 text-notam-orange px-2 py-0.5 rounded-full">
-                                    <span className="w-1 h-1 rounded-full bg-notam-orange" />
-                                    {statusCounts.orange}
-                                </span>
-                            )}
-                            {statusCounts.unknown > 0 && (
-                                <span className="flex items-center gap-1 text-xs bg-slate-800/60 border border-slate-700/50 text-slate-500 px-2 py-0.5 rounded-full">
-                                    <span className="w-1 h-1 rounded-full bg-slate-600" />
-                                    {statusCounts.unknown}
-                                </span>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Connections indicator */}
-                    {loading ? (
-                        <Wifi size={14} className="text-blue-400 spinner" />
-                    ) : error ? (
-                        <WifiOff size={14} className="text-red-400" />
-                    ) : (
-                        <Wifi size={14} className="text-notam-green" />
-                    )}
-
-                    {/* Last refresh */}
-                    {lastRefreshStr && (
-                        <div className="hidden sm:flex items-center gap-1 text-[10px] text-notam-muted">
-                            <span>Refreshed {lastRefreshStr}</span>
-                        </div>
-                    )}
-
-                    {/* UTC Clock */}
-                    <UTCClock />
-
-                    {/* Manual refresh button */}
-                    <button
-                        onClick={() => loadAllData(true)}
-                        disabled={refreshing || loading}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-blue-900/40"
-                        title="Refresh data"
-                    >
-                        <RefreshCw size={12} className={refreshing ? 'spinner' : ''} />
-                        <span className="hidden sm:inline">{refreshing ? 'Refreshing…' : 'Refresh'}</span>
-                    </button>
                 </div>
             </header>
 

@@ -143,14 +143,14 @@ const FIRCard: React.FC<FIRCardProps> = ({ fir, firStatus, notamData, loading = 
 
     return (
         <div
-            className="relative w-full h-64 [perspective:1000px] cursor-pointer group"
+            className={`flip-card relative w-full h-64 ${flipped ? 'flipped' : ''}`}
             onClick={() => setFlipped(f => !f)}
             title={flipped ? 'Click to return' : 'Click for NOTAM details'}
         >
-            <div className={`w-full h-full transition-all duration-500 [transform-style:preserve-3d] ${flipped ? '[transform:rotateY(180deg)]' : ''}`}>
+            <div className="flip-card-inner">
 
                 {/* ── FRONT ── */}
-                <div className={`absolute inset-0 [backface-visibility:hidden] rounded-xl border p-4 flex flex-col justify-between transition-colors ${BORDER[status]}`}>
+                <div className={`flip-card-front border p-4 flex flex-col justify-between transition-colors ${BORDER[status]}`}>
 
                     {/* Top row */}
                     <div className="flex items-center justify-between">
@@ -244,8 +244,8 @@ const FIRCard: React.FC<FIRCardProps> = ({ fir, firStatus, notamData, loading = 
                 </div>
 
                 {/* ── BACK ── */}
-                <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-slate-900/98 rounded-xl border border-slate-700/50 p-3 flex flex-col gap-2">
-
+                <div className="flip-card-back p-3 flex flex-col gap-2 border border-slate-700/50">
+                    
                     {/* Back header */}
                     <div className="flex items-center justify-between flex-shrink-0 border-b border-slate-700/50 pb-2">
                         <div className="flex items-center gap-2 min-w-0">

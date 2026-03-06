@@ -77,7 +77,7 @@ const Notams: React.FC<NotamsProps> = ({ firs, firData, notamData, loading }) =>
     }, [firs, firData, notamData, searchTerm, statusFilter]);
 
     return (
-        <div className="flex-1 px-4 lg:px-8 py-6 flex flex-col gap-6">
+        <div className="flex-1 px-3 sm:px-4 lg:px-8 py-4 sm:py-6 flex flex-col gap-4 sm:gap-6">
             {/* Search & Filter Top Bar */}
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-slate-900/50 p-4 rounded-xl border border-slate-800/80 shadow-sm">
                 {/* Search */}
@@ -87,7 +87,7 @@ const Notams: React.FC<NotamsProps> = ({ firs, firData, notamData, loading }) =>
                     </div>
                     <input
                         type="text"
-                        className="bg-slate-950/50 border border-slate-700/50 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 py-2 pr-4 lg:py-2.5 placeholder-slate-500 outline-none transition-all"
+                        className="bg-slate-950/50 border border-slate-700/50 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 py-2.5 pr-4 placeholder-slate-500 outline-none transition-all"
                         placeholder="Search FIR ICAO or name..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -130,7 +130,26 @@ const Notams: React.FC<NotamsProps> = ({ firs, firData, notamData, loading }) =>
             </div>
 
             {/* FIR Card Grid */}
-            {filteredFirs.length === 0 ? (
+            {loading && filteredFirs.length === 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                    {[...Array(6)].map((_, i) => (
+                        <div key={i} className="w-full h-64 rounded-xl border border-slate-800/50 bg-slate-900/30 p-4 flex flex-col justify-between overflow-hidden">
+                            <div className="flex justify-between items-start">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-16 h-8 skeleton rounded-md" />
+                                    <div className="w-24 h-4 skeleton rounded" />
+                                </div>
+                                <div className="w-12 h-6 skeleton rounded-full" />
+                            </div>
+                            <div className="space-y-2">
+                                <div className="w-32 h-4 skeleton rounded" />
+                                <div className="w-20 h-3 skeleton rounded" />
+                            </div>
+                            <div className="h-16 skeleton rounded-lg w-full" />
+                        </div>
+                    ))}
+                </div>
+            ) : filteredFirs.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center py-20 text-slate-500">
                     <Search size={48} className="mb-4 opacity-20" />
                     {statusFilter === 'red' && !searchTerm ? (
@@ -154,7 +173,7 @@ const Notams: React.FC<NotamsProps> = ({ firs, firData, notamData, loading }) =>
                     )}
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {filteredFirs.map(fir => (
                         <FIRCard
                             key={fir.icao}

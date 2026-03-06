@@ -54,60 +54,62 @@ const Home: React.FC<HomeProps> = ({ geoJson, firs, firData, notamData, loading 
     return (
         <div className="flex-1 w-full h-full relative">
             {/* Map Filter Controls */}
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2 bg-slate-900/80 backdrop-blur-md border border-slate-700/50 p-1.5 rounded-full shadow-2xl">
-                <div className="flex items-center gap-1 px-3 border-r border-slate-700/50 mr-1">
-                    <Filter size={14} className="text-slate-400" />
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden sm:inline">Filter Map</span>
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[1000] w-[calc(100%-2rem)] max-w-2xl pb-safe">
+                <div className="flex items-center gap-1.5 bg-slate-900/85 backdrop-blur-md border border-slate-700/50 px-2 py-1.5 rounded-full shadow-2xl overflow-x-auto hide-scrollbar">
+                    <div className="flex items-center gap-1 px-2 border-r border-slate-700/50 mr-0.5 flex-shrink-0">
+                        <Filter size={13} className="text-slate-400" />
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden sm:inline">Filter</span>
+                    </div>
+
+                    {/* All */}
+                    <button
+                        onClick={() => setStatusFilter('all')}
+                        className={`flex-shrink-0 px-2.5 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 ${statusFilter === 'all' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'text-slate-400 hover:text-slate-200'}`}
+                    >
+                        <span>All</span>
+                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'all' ? 'bg-white/20' : 'bg-slate-800'}`}>{counts.all}</span>
+                    </button>
+
+                    {/* Closed */}
+                    <button
+                        onClick={() => setStatusFilter('red')}
+                        className={`flex-shrink-0 px-2.5 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 ${statusFilter === 'red' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-slate-400 hover:text-red-400'}`}
+                    >
+                        <div className={`w-1.5 h-1.5 rounded-full bg-red-500 ${statusFilter !== 'red' ? 'opacity-50' : 'animate-pulse'}`} />
+                        <span>Closed</span>
+                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'red' ? 'bg-black/20' : 'bg-red-500/10 text-red-500'}`}>{counts.red}</span>
+                    </button>
+
+                    {/* Restricted */}
+                    <button
+                        onClick={() => setStatusFilter('orange')}
+                        className={`flex-shrink-0 px-2.5 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 ${statusFilter === 'orange' ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/40' : 'text-slate-400 hover:text-orange-400'}`}
+                    >
+                        <div className={`w-1.5 h-1.5 rounded-full bg-orange-500 ${statusFilter !== 'orange' ? 'opacity-50' : ''}`} />
+                        <span>Restricted</span>
+                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'orange' ? 'bg-black/20' : 'bg-orange-500/10 text-orange-500'}`}>{counts.orange}</span>
+                    </button>
+
+                    {/* ESCAT */}
+                    <button
+                        onClick={() => setStatusFilter('escat')}
+                        className={`flex-shrink-0 px-2.5 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 ${statusFilter === 'escat' ? 'bg-red-950 text-red-300 border border-red-600/60 shadow-lg shadow-red-900/30' : 'text-slate-400 hover:text-red-400 hover:border-red-900/50 border border-transparent'}`}
+                    >
+                        <AlertTriangle size={11} className={statusFilter === 'escat' ? 'text-red-400' : ''} />
+                        <span>ESCAT</span>
+                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'escat' ? 'bg-red-500/20' : 'bg-red-900/30 text-red-400'}`}>{counts.escat}</span>
+                    </button>
+
+                    {/* GNSS */}
+                    <button
+                        onClick={() => setStatusFilter('interference')}
+                        className={`flex-shrink-0 px-2.5 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 ${statusFilter === 'interference' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/40' : 'text-slate-400 hover:text-indigo-400'}`}
+                    >
+                        <div className={`w-1.5 h-1.5 rounded-full bg-indigo-400 ${statusFilter !== 'interference' ? 'opacity-50' : 'animate-pulse'}`} />
+                        <span>GNSS</span>
+                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'interference' ? 'bg-black/20' : 'bg-indigo-500/10 text-indigo-400'}`}>{counts.interference}</span>
+                    </button>
                 </div>
-
-                {/* All */}
-                <button
-                    onClick={() => setStatusFilter('all')}
-                    className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all flex items-center gap-2 ${statusFilter === 'all' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'text-slate-400 hover:text-slate-200'}`}
-                >
-                    <span>All</span>
-                    <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'all' ? 'bg-white/20' : 'bg-slate-800'}`}>{counts.all}</span>
-                </button>
-
-                {/* Closed */}
-                <button
-                    onClick={() => setStatusFilter('red')}
-                    className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all flex items-center gap-2 ${statusFilter === 'red' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-slate-400 hover:text-red-400'}`}
-                >
-                    <div className={`w-1.5 h-1.5 rounded-full bg-red-500 ${statusFilter !== 'red' ? 'opacity-50' : 'animate-pulse'}`} />
-                    <span>Closed</span>
-                    <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'red' ? 'bg-black/20' : 'bg-red-500/10 text-red-500'}`}>{counts.red}</span>
-                </button>
-
-                {/* Restricted */}
-                <button
-                    onClick={() => setStatusFilter('orange')}
-                    className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all flex items-center gap-2 ${statusFilter === 'orange' ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/40' : 'text-slate-400 hover:text-orange-400'}`}
-                >
-                    <div className={`w-1.5 h-1.5 rounded-full bg-orange-500 ${statusFilter !== 'orange' ? 'opacity-50' : ''}`} />
-                    <span>Restricted</span>
-                    <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'orange' ? 'bg-black/20' : 'bg-orange-500/10 text-orange-500'}`}>{counts.orange}</span>
-                </button>
-
-                {/* ESCAT — crimson red to match Notams page */}
-                <button
-                    onClick={() => setStatusFilter('escat')}
-                    className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all flex items-center gap-2 ${statusFilter === 'escat' ? 'bg-red-950 text-red-300 border border-red-600/60 shadow-lg shadow-red-900/30' : 'text-slate-400 hover:text-red-400 hover:border-red-900/50 border border-transparent'}`}
-                >
-                    <AlertTriangle size={12} className={statusFilter === 'escat' ? 'text-red-400' : ''} />
-                    <span>ESCAT</span>
-                    <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'escat' ? 'bg-red-500/20' : 'bg-red-900/30 text-red-400'}`}>{counts.escat}</span>
-                </button>
-
-                {/* GNSS (SPOOFING/JAMMING) */}
-                <button
-                    onClick={() => setStatusFilter('interference')}
-                    className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all flex items-center gap-2 ${statusFilter === 'interference' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/40' : 'text-slate-400 hover:text-indigo-400'}`}
-                >
-                    <div className={`w-1.5 h-1.5 rounded-full bg-indigo-400 ${statusFilter !== 'interference' ? 'opacity-50' : 'animate-pulse'}`} />
-                    <span>GNSS</span>
-                    <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'interference' ? 'bg-black/20' : 'bg-indigo-500/10 text-indigo-400'}`}>{counts.interference}</span>
-                </button>
             </div>
 
             <NotamMap

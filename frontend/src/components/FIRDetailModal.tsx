@@ -186,21 +186,22 @@ const FIRDetailModal: React.FC<FIRDetailModalProps> = ({ fir, firStatus, notamDa
     return (
         /* Backdrop */
         <div
-            className="absolute inset-0 z-[2000] flex items-center justify-center p-4 sm:p-8 bg-black/70 backdrop-blur-sm"
+            className="absolute inset-0 z-[2000] flex items-center justify-center p-3 sm:p-6 md:p-8 bg-black/75 backdrop-blur-sm"
             onClick={onClose}
         >
             {/* Modal panel */}
             <div
-                className={`relative w-full max-w-xl bg-slate-950/98 border rounded-2xl ${sc.border} ${sc.glow} flex flex-col max-h-[88vh] overflow-hidden`}
+                className={`relative w-full sm:max-w-xl bg-slate-950 border rounded-2xl ${sc.border} ${sc.glow} flex flex-col overflow-hidden`}
+                style={{ maxHeight: 'min(92dvh, 92vh)' }}
                 onClick={e => e.stopPropagation()}
             >
                 {/* ── Header ── */}
-                <div className={`flex items-center justify-between px-5 py-3.5 border-b ${sc.border} flex-shrink-0`}>
-                    <div className="flex items-center gap-3 min-w-0">
+                <div className={`flex items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 border-b ${sc.border} flex-shrink-0`}>
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                         <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${sc.dot}`} />
                         <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-mono font-black text-2xl tracking-widest text-slate-100">{fir.icao}</span>
+                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                <span className="font-mono font-black text-xl sm:text-2xl tracking-widest text-slate-100">{fir.icao}</span>
                                 {hasEscat && (
                                     <span className="text-[9px] font-black text-red-300 bg-red-950/80 border border-red-900/50 px-2 py-0.5 rounded animate-pulse tracking-widest">ESCAT</span>
                                 )}
@@ -217,39 +218,42 @@ const FIRDetailModal: React.FC<FIRDetailModalProps> = ({ fir, firStatus, notamDa
                     </div>
                     <button
                         onClick={onClose}
-                        className="text-slate-500 hover:text-slate-200 transition-colors flex-shrink-0 ml-3 p-1 rounded-lg hover:bg-slate-800/60"
+                        className="text-slate-500 hover:text-slate-200 transition-colors flex-shrink-0 ml-2 p-2 rounded-xl hover:bg-slate-800/60 active:bg-slate-700/80"
+                        aria-label="Close"
                     >
                         <X size={18} />
                     </button>
                 </div>
 
                 {/* Sub-header */}
-                <div className="px-5 py-2 border-b border-slate-800/60 flex-shrink-0 flex items-center gap-3">
-                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em]">
-                        Operational NOTAMs
-                    </span>
-                    <div className="ml-auto flex items-center gap-2">
-                        <label htmlFor="startDateFilter" className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
-                            Start ≥
-                        </label>
-                        <input
-                            id="startDateFilter"
-                            type="date"
-                            value={startDateFilter}
-                            onChange={(e) => setStartDateFilter(e.target.value)}
-                            className="bg-slate-900 border border-slate-700/70 text-slate-300 text-[10px] rounded px-2 py-1 outline-none focus:border-blue-500"
-                        />
-                        {startDateFilter && (
-                            <button
-                                onClick={() => setStartDateFilter('')}
-                                className="text-[9px] text-slate-400 hover:text-slate-200 px-1.5 py-1 rounded border border-slate-700/60 hover:border-slate-500/70"
-                            >
-                                Clear
-                            </button>
-                        )}
-                        {allNotams.length > 0 && (
-                            <span className="text-[9px] text-slate-600 font-mono">{filteredNotams.length}/{allNotams.length}</span>
-                        )}
+                <div className="px-4 sm:px-5 py-2 border-b border-slate-800/60 flex-shrink-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em]">
+                            Operational NOTAMs
+                        </span>
+                        <div className="sm:ml-auto flex items-center gap-2 flex-wrap">
+                            <label htmlFor="startDateFilter" className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
+                                Start ≥
+                            </label>
+                            <input
+                                id="startDateFilter"
+                                type="date"
+                                value={startDateFilter}
+                                onChange={(e) => setStartDateFilter(e.target.value)}
+                                className="bg-slate-900 border border-slate-700/70 text-slate-300 text-[10px] rounded px-2 py-1 outline-none focus:border-blue-500 flex-1 sm:flex-none"
+                            />
+                            {startDateFilter && (
+                                <button
+                                    onClick={() => setStartDateFilter('')}
+                                    className="text-[9px] text-slate-400 hover:text-slate-200 px-2 py-1 rounded border border-slate-700/60 hover:border-slate-500/70 active:bg-slate-800"
+                                >
+                                    Clear
+                                </button>
+                            )}
+                            {allNotams.length > 0 && (
+                                <span className="text-[9px] text-slate-600 font-mono">{filteredNotams.length}/{allNotams.length}</span>
+                            )}
+                        </div>
                     </div>
                 </div>
 
