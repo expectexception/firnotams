@@ -117,8 +117,12 @@ const AIRSPACE_KEYWORDS: { label: string; pattern: RegExp }[] = [
 // GNSS Interference (Jamming/Spoofing) patterns
 const INTERFERENCE_PATTERNS = /\b(JAMMING|SPOOFING|GPS UNREL|GNSS UNREL|GNSS SIGNAL INTERFERENCE|JAM|GPS)\b/i;
 
-function hasInterference(text: string): boolean {
+export function hasInterference(text: string): boolean {
     return INTERFERENCE_PATTERNS.test(text);
+}
+
+export function isEscat(text: string): boolean {
+    return /\bESCAT\b/i.test(text);
 }
 
 // Cutoff: NOTAMs must have started on or after 28 Feb 2026
@@ -394,7 +398,7 @@ function parseYYMMDDHHMM(raw: string): Date | null {
     return isNaN(d.getTime()) ? null : d;
 }
 
-function parseBField(text: string, analysis?: any): Date | null {
+export function parseBField(text: string, analysis?: any): Date | null {
     const raw = analysis?.startsAtUtc ?? analysis?.bField;
     if (raw) {
         const d = /^\d{10}$/.test(raw) ? parseYYMMDDHHMM(raw) : new Date(raw);
@@ -561,22 +565,37 @@ function getCategoryPriority(text: string): number {
     // 0. Absolute Top Priority
     if (PAK_INDIA_RESTRICTION_PATTERN.test(eField)) return 0;
 
-    // 1. LP (Prohibited)
-    if (qCode4.endsWith('LP') || /\bPROHIBITED\b/i.test(eField)) return 1;
+    // 1. Hard Closure (Broad FIR/Airspace)
+    if (hasHardClosure(eField)) return 1;
 
-    // 2. LC (Closed / Unavailable)
-    if (qCode4.endsWith('LC') || /\b(CLOSED|CLSD|UNAVAILABLE|NOT\s+AVAILABLE)\b/i.test(eField)) return 2;
+    // 2. LP (Prohibited)
+    if (qCode4.endsWith('LP') || /\bPROHIBITED\b/i.test(eField)) return 2;
 
-    // 3. Ops reasons
-    if (OPS_REASONS_PATTERNS.test(eField)) return 3;
+    // 3. Generic LC (Closed / Unavailable)
+    if (qCode4.endsWith('LC') || /\b(CLOSED|CLSD|UNAVAILABLE|NOT\s+AVAILABLE)\b/i.test(eField)) return 3;
 
-    // 4. Spoofing and jamming (GNSS)
-    if (hasInterference(text)) return 4;
+    // 4. Ops reasons
+    if (OPS_REASONS_PATTERNS.test(eField)) return 4;
+
+    // 5. Spoofing and jamming (GNSS)
+    if (hasInterference(text)) return 5;
 
     return 99; // Lower priority for everything else
 }
 
-function isOmaePartialClosureNotam(text: string): boolean {
+const PARTIAL_CLOSURE_PATTERNS: RegExp[] = [
+    /\bPARTIALLY\s+CLOSED\b/i,
+    /\bNOT\s+AVBL\b/i,
+    /\bNOT\s+AVAILABLE\b/i,
+    ...OMAE_PARTIAL_CLOSURE_PATTERNS,
+];
+
+export function isPartiallyClosed(text: string): boolean {
+    const eField = extractEField(text);
+    return PARTIAL_CLOSURE_PATTERNS.some(p => p.test(eField));
+}
+
+export function isOmaePartialClosureNotam(text: string): boolean {
     const hasOmaeContext =
         /\bQ\)\s*OMAE\//i.test(text) ||
         /\bA\)\s*OMAE\b/i.test(text) ||
@@ -624,7 +643,7 @@ function extractQCode4(text: string): string {
 }
 
 // Get severity score for a NOTAM based on Q-code + E-field keywords
-function getSeverityScore(text: string): number {
+export function getSeverityScore(text: string): number {
     const eField = extractEField(text);
 
     // Explicit closure language must win over weaker/misc Q-code labels.
@@ -807,31 +826,38 @@ export function selectBestFirNotams(rawNotams: NotamItem[]): SelectionResult {
     }
 
     // ── Step 5: Score and sort ──
-    const scored = pool.map(n => ({
-        notam: n,
-        score: getSeverityScore(n.text),
-        bDate: parseBField(n.text, n.analysis),
-        isReopen: isReopen(n.text),
-    }));
+    const scored = pool.map(n => {
+        const bDate = parseBField(n.text, n.analysis);
+        return {
+            notam: n,
+            score: getSeverityScore(n.text),
+            bDate: bDate,
+            isReopen: isReopen(n.text),
+            afterCutoff: bDate ? bDate >= CUTOFF_DATE : false
+        };
+    });
 
-    // Sort: Date newest first (Primary), then Category Priority (Secondary)
+    // Sort Order:
+    // 1. After Cutoff (True > False) - Post 28 Feb 2026 priority
+    // 2. Category Priority (LP > LC > Ops > GNSS)
+    // 3. Date newest first (Recency)
     scored.sort((a, b) => {
-        const aCat = getCategoryPriority(a.notam.text);
-        const bCat = getCategoryPriority(b.notam.text);
-
-        // Absolute top priority override (Category 0)
-        if (aCat === 0 && bCat !== 0) return -1;
-        if (bCat === 0 && aCat !== 0) return 1;
-
-        const aTime = a.bDate?.getTime() ?? 0;
-        const bTime = b.bDate?.getTime() ?? 0;
-
-        if (aTime !== bTime) {
-            return bTime - aTime; // Newest first
+        // Tier 1: Cutoff Priority
+        if (a.afterCutoff !== b.afterCutoff) {
+            return a.afterCutoff ? -1 : 1;
         }
 
-        // Tiered priority for same-day NOTAMs
-        return aCat - bCat;
+        // Tier 2: Category Priority
+        const aCat = getCategoryPriority(a.notam.text);
+        const bCat = getCategoryPriority(b.notam.text);
+        if (aCat !== bCat) {
+            return aCat - bCat;
+        }
+
+        // Tier 3: Date recency
+        const aTime = a.bDate?.getTime() ?? 0;
+        const bTime = b.bDate?.getTime() ?? 0;
+        return bTime - aTime;
     });
 
     const winner = scored[0];
@@ -873,29 +899,33 @@ export function selectTop3FirNotams(rawNotams: NotamItem[]): { notams: NotamItem
 
     // Re-score the full surviving pool and take top 3
     const pool = result.all;
-    const scored = pool.map(n => ({
-        notam: n,
-        score: getSeverityScore(n.text),
-        bDate: parseBField(n.text, n.analysis),
-    }));
+    const scored = pool.map(n => {
+        const bDate = parseBField(n.text, n.analysis);
+        return {
+            notam: n,
+            score: getSeverityScore(n.text),
+            bDate: bDate,
+            afterCutoff: bDate ? bDate >= CUTOFF_DATE : false
+        };
+    });
+
     scored.sort((a, b) => {
+        // Tier 1: Cutoff Priority
+        if (a.afterCutoff !== b.afterCutoff) {
+            return a.afterCutoff ? -1 : 1;
+        }
+
+        // Tier 2: Category Priority
         const aCat = getCategoryPriority(a.notam.text);
         const bCat = getCategoryPriority(b.notam.text);
+        if (aCat !== bCat) {
+            return aCat - bCat;
+        }
 
-        // Absolute top priority override (Category 0)
-        if (aCat === 0 && bCat !== 0) return -1;
-        if (bCat === 0 && aCat !== 0) return 1;
-
-        // Highest severity first
-        if (a.score !== b.score) return b.score - a.score;
-
-        // Then newest B-date first
+        // Tier 3: Date recency
         const aT = a.bDate?.getTime() ?? 0;
         const bT = b.bDate?.getTime() ?? 0;
-        if (aT !== bT) return bT - aT;
-
-        // Tie-breaker: Category
-        return aCat - bCat;
+        return bT - aT;
     });
 
     return {

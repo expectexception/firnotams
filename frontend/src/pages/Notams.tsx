@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { FirInfo, FirStatusItem, LocationNotams } from '../types';
 import { Search, Filter, AlertTriangle } from 'lucide-react';
 import FIRCard from '../components/FIRCard';
+import { isPakIndiaRestriction, isPartiallyClosed, hasInterference, isEscat, getSeverityScore, parseBField } from '../utils/notamParsers';
 
 interface NotamsProps {
     firs: FirInfo[];
@@ -10,7 +11,7 @@ interface NotamsProps {
     loading: boolean;
 }
 
-type FilterStatus = 'red' | 'orange' | 'escat' | 'interference';
+type FilterStatus = 'red' | 'escat' | 'interference';
 
 
 const Notams: React.FC<NotamsProps> = ({ firs, firData, notamData, loading }) => {
@@ -27,22 +28,27 @@ const Notams: React.FC<NotamsProps> = ({ firs, firData, notamData, loading }) =>
             const fd = firData[fir.icao];
             const status = d?.status && d.status !== 'unknown' ? d.status : (fd?.status || 'unknown');
 
+            // Effectively closed logic: promotes some orange to red for filtering
+            const isEffectivelyClosed = d?.notams?.some(n => 
+                isPakIndiaRestriction(n.text) || isPartiallyClosed(n.text)
+            );
+            const effectiveStatus = (status === 'orange' && isEffectivelyClosed) ? 'red' : status;
+
             if (!geoGroups[code]) {
                 geoGroups[code] = { status: 'unknown', hasInterference: false, hasEscat: false };
             }
 
-            if (severityRank[status] > severityRank[geoGroups[code].status]) {
-                geoGroups[code].status = status;
+            if (severityRank[effectiveStatus] > severityRank[geoGroups[code].status]) {
+                geoGroups[code].status = effectiveStatus;
             }
             if (fd?.hasEscat || d?.hasEscat) geoGroups[code].hasEscat = true;
             if (fd?.hasInterference || d?.hasInterference) geoGroups[code].hasInterference = true;
         });
 
         const geoValues = Object.values(geoGroups);
-        const counts = { red: 0, orange: 0, green: 0, escat: 0, interference: 0 };
+        const counts = { red: 0, green: 0, escat: 0, interference: 0 };
         geoValues.forEach(g => {
             if (g.status === 'red') counts.red++;
-            if (g.status === 'orange') counts.orange++;
             if (g.status === 'green') counts.green++;
             if (g.hasEscat) counts.escat++;
             if (g.hasInterference) counts.interference++;
@@ -63,13 +69,19 @@ const Notams: React.FC<NotamsProps> = ({ firs, firData, notamData, loading }) =>
             const status = nd?.status && nd.status !== 'unknown' ? nd.status : (fd?.status ?? 'unknown');
             const hasEscat = fd?.hasEscat ?? nd?.hasEscat ?? false;
 
+            const n = nd?.notams;
+            const isEffectivelyClosed = n?.some(notam => 
+                isPakIndiaRestriction(notam.text) || isPartiallyClosed(notam.text)
+            );
+            const effectiveStatus = (status === 'orange' && isEffectivelyClosed) ? 'red' : status;
+
             let matchesFilter = true;
             if (statusFilter === 'escat') {
                 matchesFilter = hasEscat;
             } else if (statusFilter === 'interference') {
                 matchesFilter = fd?.hasInterference || nd?.hasInterference || false;
             } else {
-                matchesFilter = status === statusFilter;
+                matchesFilter = effectiveStatus === statusFilter;
             }
 
             return matchesSearch && matchesFilter;
@@ -104,13 +116,7 @@ const Notams: React.FC<NotamsProps> = ({ firs, firData, notamData, loading }) =>
                         <span>Closed</span>
                         <span className={`px-1.5 py-0.5 rounded-md text-[10px] ${statusFilter === 'red' ? 'bg-red-500/20' : 'bg-red-500/10 text-red-500'}`}>{statusCounts.red}</span>
                     </button>
-                    <button
-                        onClick={() => setStatusFilter('orange')}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${statusFilter === 'orange' ? 'bg-orange-950/80 text-orange-400 border-orange-500/50 shadow-[0_0_10px_-2px_rgba(249,115,22,0.2)]' : 'bg-slate-800/50 text-slate-400 border-transparent hover:bg-slate-700/80'}`}
-                    >
-                        <span>Restricted</span>
-                        <span className={`px-1.5 py-0.5 rounded-md text-[10px] ${statusFilter === 'orange' ? 'bg-orange-500/20' : 'bg-orange-500/10 text-orange-500'}`}>{statusCounts.orange}</span>
-                    </button>
+                    
                     <button
                         onClick={() => setStatusFilter('escat')}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${statusFilter === 'escat' ? 'bg-red-950/90 text-red-300 border-red-600/60 shadow-[0_0_12px_-2px_rgba(239,68,68,0.35)]' : 'bg-slate-800/50 text-slate-400 border-transparent hover:bg-red-950/40 hover:text-red-400 hover:border-red-900/50'}`}
@@ -174,15 +180,62 @@ const Notams: React.FC<NotamsProps> = ({ firs, firData, notamData, loading }) =>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    {filteredFirs.map(fir => (
-                        <FIRCard
-                            key={fir.icao}
-                            fir={fir}
-                            firStatus={firData[fir.icao] ?? null}
-                            notamData={notamData[fir.icao] ?? null}
-                            loading={loading && !firData[fir.icao]}
-                        />
-                    ))}
+                    {filteredFirs.map(fir => {
+                        let displayNotamData = notamData[fir.icao] ?? null;
+
+                        // If GNSS filter is active, prioritize showing a GNSS NOTAM as primary
+                        if (statusFilter === 'interference' && displayNotamData?.notams) {
+                            const gnssIndex = displayNotamData.notams.findIndex(n => hasInterference(n.text));
+                            if (gnssIndex > 0) {
+                                // Rotate the array so the GNSS NOTAM is first
+                                const newNotams = [...displayNotamData.notams];
+                                const [gnssNotam] = newNotams.splice(gnssIndex, 1);
+                                newNotams.unshift(gnssNotam);
+                                
+                                displayNotamData = {
+                                    ...displayNotamData,
+                                    notams: newNotams
+                                };
+                            }
+                        }
+
+                        // If ESCAT filter is active, prioritize showing the most important/recent ESCAT NOTAM
+                        if (statusFilter === 'escat' && displayNotamData?.notams) {
+                            const escatNotams = displayNotamData.notams
+                                .map((n, index) => ({ n, index, score: getSeverityScore(n.text), date: parseBField(n.text, n.analysis)?.getTime() ?? 0 }))
+                                .filter(item => isEscat(item.n.text));
+                            
+                            if (escatNotams.length > 0) {
+                                // Sort: Severity Score (Primary), Start Date (Secondary)
+                                escatNotams.sort((a, b) => {
+                                    if (b.score !== a.score) return b.score - a.score;
+                                    return b.date - a.date;
+                                });
+
+                                const winnerIndex = escatNotams[0].index;
+                                if (winnerIndex > 0) {
+                                    const newNotams = [...displayNotamData.notams];
+                                    const [winnerNotam] = newNotams.splice(winnerIndex, 1);
+                                    newNotams.unshift(winnerNotam);
+                                    
+                                    displayNotamData = {
+                                        ...displayNotamData,
+                                        notams: newNotams
+                                    };
+                                }
+                            }
+                        }
+
+                        return (
+                            <FIRCard
+                                key={fir.icao}
+                                fir={fir}
+                                firStatus={firData[fir.icao] ?? null}
+                                notamData={displayNotamData}
+                                loading={loading && !firData[fir.icao]}
+                            />
+                        );
+                    })}
                 </div>
             )}
         </div>
