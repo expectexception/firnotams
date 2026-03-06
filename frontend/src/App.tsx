@@ -1,3 +1,5 @@
+// testing small commit
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Routes, Route, NavLink, useLocation } from 'react-router-dom';
 import { RefreshCw, Plane, Wifi, WifiOff, AlertCircle, Map as MapIcon, Database } from 'lucide-react';
