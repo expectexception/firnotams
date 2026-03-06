@@ -1,0 +1,15 @@
+[dotenv@17.3.1] injecting env (16) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+--- Sync Deletion Verification (TS) ---
+✅ Connected to MongoDB
+✅ Seeded ZZZZ with 1 stale NOTAM
+Initial NOTAM count: 1
+Running fetchBulkNotams for ZZZZ...
+[NOTAM] Background fetching missing (expanded to FIRs): ZZZZ
+[NOTAM] Fetching from Autorouter API for: ZZZZ
+Waiting for background sync (20s)...
+[AUTOROUTER] Processing chunk 1: [ZZZZ]
+[AUTOROUTER] Request✅ Success: Stale NOTAM was removed for ZZZZ after 23s
+ZZZ: 0 NOTAMs, status=unknown
+[DB] Saving merged NOTAMs for ZZZZ: 0 total (0 from current fetch, 1 in DB)
+[DB] Updated NOTAM record for ZZZZ
+✅ Success: Stale NOTAM was removed for ZZZZ after 2s

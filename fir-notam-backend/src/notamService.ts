@@ -245,32 +245,34 @@ async function upsertIfChanged(result: LocationNotams): Promise<'inserted_or_cha
         .lean();
 
     // ── MERGE STRATEGY ─────────────────────────────────────────────────────────
-    // Problem: A single FAA scrape page may not return ALL valid NOTAMs for a
-    // location. Naively replacing the DB with the scrape result discards valid
-    // long-running NOTAMs that just weren't returned this time.
-    //
-    // Solution: Merge the scrape's latest NOTAMs with what's already in the DB:
-    //   1. Build a map of existing NOTAMs by ID.
-    //   2. Apply newly-scraped NOTAMs on top (updates text/status if changed).
-    //   3. Track any IDs explicitly replaced/cancelled by NOTAMR/NOTAMC.
-    //   4. Remove NOTAMs that are: (a) expired past their C-time, or
-    //      (b) explicitly superseded by a NOTAMR/C in the new batch.
-    //   5. Keep everything else — it's still valid until its own expiry.
+    // Problem: A partial scrape might return only a subset of NOTAMs.
+    // Replace DB content only if the scrape was "complete".
+    // Otherwise, perform a union-merge to avoid dropping valid data.
     // ────────────────────────────────────────────────────────────────────────────
 
     const GRACE_PERIOD_MS = 7 * 24 * 60 * 60 * 1000; // 7 days grace for EST NOTAMs
-
-    // Build the existing-NOTAM map (id → item)
     const mergedMap = new Map<string, NotamItem>();
-    for (const n of ((existing as any)?.notams ?? []) as NotamItem[]) {
-        const id = n.analysis?.notamId || n.id;
-        mergedMap.set(id, n);
-    }
 
-    // Layer in the freshly-scraped NOTAMs (upsert by ID — new beats old)
-    for (const n of result.notams) {
-        const id = n.analysis?.notamId || n.id;
-        mergedMap.set(id, n);
+    if (result.isComplete) {
+        // SCENARIO 1: Complete Scrape - The current batch is the absolute truth.
+        // We drop anything in DB that isn't in this batch.
+        for (const n of result.notams) {
+            const id = n.analysis?.notamId || n.id;
+            mergedMap.set(id, n);
+        }
+    } else {
+        // SCENARIO 2: Incomplete Scrape - Merge with DB to avoid data loss.
+        // Build the existing-NOTAM map (id → item)
+        for (const n of ((existing as any)?.notams ?? []) as NotamItem[]) {
+            const id = n.analysis?.notamId || n.id;
+            mergedMap.set(id, n);
+        }
+
+        // Layer in the freshly-scraped NOTAMs (upsert by ID — new beats old)
+        for (const n of result.notams) {
+            const id = n.analysis?.notamId || n.id;
+            mergedMap.set(id, n);
+        }
     }
 
     // Collect the set of IDs that are explicitly superseded in the new batch
@@ -509,12 +511,14 @@ export async function fetchBulkNotams(
         const useAutorouter = process.env.USE_AUTOROUTER_API_DATA === 'true';
 
         let arResults: Record<string, NotamItem[]> = {};
+        let arSuccess = true;
         if (useAutorouter) {
             try {
                 console.log(`[NOTAM] Fetching from Autorouter API for: ${finalMissing.join(', ')}`);
                 arResults = await fetchAutorouterNotams(finalMissing);
             } catch (err) {
                 console.error(`[NOTAM] Autorouter API failed:`, err);
+                arSuccess = false;
             }
         }
 
@@ -1075,7 +1079,7 @@ export async function fetchBulkNotams(
                             hasEscat: locationHasEscat,
                             hasInterference: locationHasInterference,
                             cachedAt: Date.now(),
-                            isComplete: isChunkComplete,
+                            isComplete: (useScraper ? isChunkComplete : true) && (useAutorouter ? arSuccess : true),
                             dataSource: useAutorouter ? (useScraper ? 'mixed-live' : 'api-live') : 'scraped-live',
                         };
                         delete result.error;
