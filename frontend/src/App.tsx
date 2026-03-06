@@ -254,7 +254,7 @@ function App() {
                                 }
                             >
                                 <MapIcon size={13} />
-                                <span className="hidden sm:inline">Home</span>
+                                <span className="hidden sm:inline">Map</span>
                             </NavLink>
                             <NavLink
                                 to="/notams"
