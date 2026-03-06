@@ -1,0 +1,252 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Custom global styles ─────────────────────────────────── */
+:root {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --border: #334155;
+  --green: #16a34a;
+  --orange: #d97706;
+  --red: #dc2626;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: "Outfit", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* ── Flip Card ──────────────────────────────────────────────── */
+.flip-card {
+  perspective: 1200px;
+  cursor: pointer;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.flip-card.flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  border-radius: 12px;
+  overflow: hidden;
+  /* Force hardware acceleration and isolate stacking */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  isolation: isolate;
+  background-color: #0f172a;
+  /* Ensure a solid base */
+}
+
+.flip-card-front {
+  transform: rotateY(0deg) translateZ(0);
+  z-index: 2;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg) translateZ(0);
+  z-index: 1;
+}
+
+.flip-card.flipped .flip-card-front {
+  z-index: 1;
+}
+
+.flip-card.flipped .flip-card-back {
+  z-index: 2;
+  transform: rotateY(180deg) translateZ(1px);
+  /* Slight lift to help z-sorting */
+}
+
+/* ── Status Glow ────────────────────────────────────────────── */
+.status-glow-green {
+  box-shadow:
+    0 0 0 1px #16a34a40,
+    0 0 20px #16a34a20;
+}
+
+.status-glow-orange {
+  box-shadow:
+    0 0 0 1px #d9770640,
+    0 0 20px #d9770620;
+}
+
+.status-glow-red {
+  box-shadow:
+    0 0 0 1px #dc262640,
+    0 0 20px #dc262620;
+  animation: red-pulse 2s ease-in-out infinite;
+}
+
+.status-glow-unknown {
+  box-shadow: 0 0 0 1px #47556940;
+}
+
+@keyframes red-pulse {
+
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px #dc262640,
+      0 0 20px #dc262620;
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 1px #dc262680,
+      0 0 30px #dc262640;
+  }
+}
+
+/* ── Leaflet overrides ──────────────────────────────────────── */
+.leaflet-container {
+  background: #0f172a !important;
+  font-family: "Outfit", sans-serif !important;
+}
+
+.leaflet-tile-pane {
+  filter: brightness(0.85) saturate(0.7);
+}
+
+/* Premium Tooltip Styling - Dark Glassmorphism */
+.notam-tooltip {
+  background: rgba(15, 23, 42, 0.8) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(51, 65, 85, 0.5) !important;
+  border-radius: 12px !important;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+  padding: 0 !important;
+  color: #e2e8f0 !important;
+}
+
+.notam-tooltip::before {
+  display: none !important;
+}
+
+.leaflet-tooltip-left.notam-tooltip:before,
+.leaflet-tooltip-right.notam-tooltip:before {
+  display: none !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+  border: 1px solid #334155 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+}
+
+.leaflet-popup-tip {
+  background: #1e293b !important;
+}
+
+.leaflet-control-zoom a {
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: #334155 !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(15, 23, 42, 0.8) !important;
+  color: #64748b !important;
+}
+
+.leaflet-control-attribution a {
+  color: #94a3b8 !important;
+}
+
+/* ── ESCAT banner animation ─────────────────────────────────── */
+@keyframes escat-flash {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.escat-banner {
+  animation: escat-flash 1.5s ease-in-out infinite;
+}
+
+/* ── Notam text pre ─────────────────────────────────────────── */
+.notam-text {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #f1f5f9;
+}
+
+/* ── Loading spinner ────────────────────────────────────────── */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}

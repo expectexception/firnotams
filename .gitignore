@@ -1,0 +1,10 @@
+.env
+backend_tunnel.log
+frontend_tunnel.log
+tunnel_logs/
+.tunnel_pids
+node_modules
+*.zip
+*.tar.gz
+*node_modules/
+*dist/
