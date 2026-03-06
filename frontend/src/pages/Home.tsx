@@ -54,7 +54,7 @@ const Home: React.FC<HomeProps> = ({ geoJson, firs, firData, notamData, loading 
     return (
         <div className="flex-1 w-full h-full relative">
             {/* Map Filter Controls */}
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[1000] w-[calc(100%-2rem)] max-w-2xl pb-safe">
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[1000] w-max max-w-[calc(100%-2rem)] pb-safe">
                 <div className="flex items-center gap-1.5 bg-slate-900/85 backdrop-blur-md border border-slate-700/50 px-2 py-1.5 rounded-full shadow-2xl overflow-x-auto hide-scrollbar">
                     <div className="flex items-center gap-1 px-2 border-r border-slate-700/50 mr-0.5 flex-shrink-0">
                         <Filter size={13} className="text-slate-400" />
