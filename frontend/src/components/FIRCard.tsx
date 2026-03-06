@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FirInfo, FirStatusItem, LocationNotams, NotamStatus } from '../types';
-import { RotateCcw, Wifi, WifiOff, AlertTriangle, Route, Navigation, SignalLow } from 'lucide-react';
+import { RotateCcw, Wifi, WifiOff, AlertTriangle, Route, Navigation, SignalLow, Clock } from 'lucide-react';
 import { parseFirNotam, getDuration, type FirNotamMeta } from '../utils/notamParsers';
 
 interface FIRCardProps {
@@ -244,63 +244,82 @@ const FIRCard: React.FC<FIRCardProps> = ({ fir, firStatus, notamData, loading = 
                 </div>
 
                 {/* ── BACK ── */}
-                <div className="flip-card-back p-3 flex flex-col gap-2 border border-slate-700/50">
+                <div className="flip-card-back p-4 flex flex-col gap-3 border border-slate-700/50">
                     
                     {/* Back header */}
-                    <div className="flex items-center justify-between flex-shrink-0 border-b border-slate-700/50 pb-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                            <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${DOT[status]}`} />
-                            <span className="font-mono font-bold text-slate-200 text-sm tracking-widest">{fir.icao}</span>
-                            <span className="text-[9px] text-slate-600 truncate">{fir.name}</span>
+                    <div className="flex items-center justify-between flex-shrink-0 border-b border-slate-700/50 pb-2.5">
+                        <div className="flex flex-col min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                                <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${DOT[status]}`} />
+                                <span className="font-mono font-bold text-slate-100 text-sm tracking-widest">{fir.icao}</span>
+                                {n && (
+                                    <span className="font-mono text-[9px] text-slate-500 bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-700/30">
+                                        {n.id}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1 ml-3.5 overflow-hidden">
+                                {meta && (
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                        <span className={`font-mono text-[9px] px-1.5 py-0.5 rounded border font-bold shrink-0 ${SEVERITY_BADGE[meta.severity] ?? SEVERITY_BADGE.info}`}>
+                                            {meta.qCodeFull}
+                                        </span>
+                                        {meta.qSubject && (
+                                            <span className={`text-[10px] font-bold uppercase truncate ${meta.severity === 'red' ? 'text-red-400' : meta.severity === 'orange' ? 'text-amber-400' : 'text-slate-400'}`}>
+                                                {meta.qSubject} {meta.qCondition}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+                                {!meta && <span className="text-[10px] text-slate-500 truncate font-medium">{fir.name}</span>}
+                            </div>
                         </div>
-                        <RotateCcw size={13} className="text-slate-400 group-hover:text-slate-200 transition-colors flex-shrink-0 ml-2" />
+                        <RotateCcw size={14} className="text-slate-500 hover:text-slate-300 transition-colors flex-shrink-0 ml-2 cursor-pointer" />
                     </div>
 
                     {n && meta ? (
-                        <div className="flex-1 flex flex-col gap-2 min-h-0 overflow-y-auto custom-scrollbar">
-
-                            {/* Q-code row */}
-                            <div className={`rounded-lg px-2.5 py-2 border-l-2 ${SEVERITY_BAR[meta.severity] ?? SEVERITY_BAR.info}`}>
-                                <QBadge meta={meta} />
-                            </div>
+                        <div className="flex-1 flex flex-col gap-3 min-h-0 overflow-y-auto custom-scrollbar pr-1">
+                            {/* Scope + keywords */}
 
                             {/* Scope + keywords */}
                             {(meta.isEnroute || meta.keywords.length > 0 || !meta.afterCutoff) && (
-                                <ScopeTags meta={meta} />
+                                <div className="px-1">
+                                    <ScopeTags meta={meta} />
+                                </div>
                             )}
 
                             {/* Date range */}
                             {(meta.startFmt || meta.endFmt) && (
-                                <div className="bg-slate-800/40 rounded px-2 py-1.5 border border-slate-700/40">
-                                    <div className="text-[8px] text-slate-600 font-bold tracking-widest mb-0.5">DURATION</div>
+                                <div className="bg-slate-900/50 rounded-lg px-3 py-2 border border-slate-800/80 flex items-center justify-between gap-3">
+                                    <div className="text-[9px] text-slate-600 font-bold tracking-widest flex items-center gap-1.5 shrink-0">
+                                        <Clock size={10} className="text-slate-700" />
+                                        <span>DURATION</span>
+                                    </div>
                                     <DateRange meta={meta} />
                                 </div>
                             )}
 
                             {/* E-field text */}
                             {meta.eField && (
-                                <div className="flex-1 min-h-0">
-                                    <div className="text-[8px] text-slate-600 font-bold tracking-widest mb-0.5">NOTAM TEXT</div>
-                                    <div className="font-mono text-[10px] text-slate-300 leading-relaxed whitespace-pre-wrap break-words overflow-y-auto max-h-20 custom-scrollbar pr-0.5">
+                                <div className="flex-1 min-h-0 px-1 pb-2">
+                                    <div className="text-[9px] text-slate-600 font-bold tracking-widest mb-1.5">NOTAM TEXT</div>
+                                    <div className="font-mono text-[10px] text-slate-300 leading-relaxed whitespace-pre-wrap break-words">
                                         {meta.eField}
                                     </div>
                                 </div>
                             )}
-
-                            {/* NOTAM ID footer */}
-                            <div className="font-mono text-[8px] text-slate-700 tracking-widest flex-shrink-0">{n.id}</div>
                         </div>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center gap-2 text-slate-600">
+                        <div className="flex-1 flex flex-col items-center justify-center gap-3 text-slate-700">
                             {notamData?.error ? (
                                 <>
-                                    <WifiOff size={20} />
-                                    <p className="text-xs text-center text-red-400">{notamData.error}</p>
+                                    <WifiOff size={24} className="opacity-40" />
+                                    <p className="text-xs text-center text-red-400 font-medium">{notamData.error}</p>
                                 </>
                             ) : (
                                 <>
-                                    <Wifi size={20} />
-                                    <p className="text-xs text-center">No active NOTAMs</p>
+                                    <Wifi size={24} className="opacity-40" />
+                                    <p className="text-xs text-center font-medium">No active NOTAMs at this level</p>
                                 </>
                             )}
                         </div>

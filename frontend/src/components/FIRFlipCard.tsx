@@ -52,10 +52,13 @@ const NotamDuration: React.FC<{ text: string }> = ({ text }) => {
     const cFmt = c ? fmtNotamDate(c) : null;
     if (!bFmt && !cFmt) return null;
     return (
-        <div className="flex items-center gap-1 flex-wrap text-[9px] text-slate-500 font-mono mt-1">
-            {bFmt && <span>{bFmt}</span>}
-            {bFmt && cFmt && <span className="text-slate-700">→</span>}
-            {cFmt && <span>{cFmt}</span>}
+        <div className="flex items-center justify-between gap-2 text-[9px] font-mono mt-2 pt-2 border-t border-white/5">
+            <span className="text-slate-600 font-bold tracking-widest uppercase">Duration</span>
+            <div className="flex items-center gap-1 text-slate-500">
+                {bFmt && <span>{bFmt}</span>}
+                {bFmt && cFmt && <span className="text-slate-700">→</span>}
+                {cFmt && <span>{cFmt}</span>}
+            </div>
         </div>
     );
 };
@@ -122,52 +125,70 @@ const FIRFlipCard: React.FC<FIRFlipCardProps> = ({ fir, notamData, loading }) =>
                 </div>
 
                 {/* BACK */}
-                <div className="flip-card-back bg-slate-900/95 p-3 flex flex-col border border-slate-700/50">
-                    <div className="flex items-center justify-between mb-2 flex-shrink-0 border-b border-slate-700/50 pb-2">
-                        <div className="flex items-center gap-2">
-                            <span className="font-mono font-bold text-slate-200 text-sm tracking-widest">{fir.icao}</span>
-                            <span className="text-[10px] text-slate-600">{fir.name.replace(' FIR', '')}</span>
+                <div className="flip-card-back bg-slate-900/95 p-4 flex flex-col gap-3 border border-slate-700/50">
+                    <div className="flex items-center justify-between flex-shrink-0 border-b border-slate-700/50 pb-2.5">
+                        <div className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-2">
+                                <span className="font-mono font-bold text-slate-100 text-sm tracking-widest">{fir.icao}</span>
+                                <span className="text-[10px] text-slate-500 truncate font-medium">{fir.name.replace(' FIR', '')}</span>
+                            </div>
                         </div>
-                        <RotateCcw size={13} className="text-slate-400 group-hover:text-slate-200 transition-colors flex-shrink-0" />
+                        <RotateCcw size={14} className="text-slate-500 hover:text-slate-300 transition-colors flex-shrink-0 ml-2 cursor-pointer" />
                     </div>
 
-                    <div className="flex-1 overflow-y-auto space-y-2 pr-0.5 custom-scrollbar min-h-0">
+                    <div className="flex-1 overflow-y-auto space-y-4 pr-1 custom-scrollbar min-h-0">
                         {notamData?.error ? (
-                            <div className="flex flex-col items-center justify-center h-full gap-2 text-red-400">
-                                <WifiOff size={20} />
-                                <p className="text-xs text-center">{notamData.error}</p>
+                            <div className="flex flex-col items-center justify-center h-full gap-3 text-red-400">
+                                <WifiOff size={24} className="opacity-40" />
+                                <p className="text-xs text-center font-medium">{notamData.error}</p>
                             </div>
                         ) : notams.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center h-full gap-2 text-green-500/70">
-                                <Wifi size={20} />
+                            <div className="flex flex-col items-center justify-center h-full gap-3 text-green-500/50">
+                                <Wifi size={24} className="opacity-40" />
                                 <p className="text-xs text-center font-medium">No active NOTAMs</p>
                             </div>
                         ) : (
                             notams.map((n, idx) => (
-                                <div key={n.id} className="mb-1.5 last:mb-0">
-                                    <div className={`text-[9px] font-bold tracking-widest uppercase mb-1 flex items-center justify-between ${idx === 0 ? 'text-blue-400' : 'text-slate-500'}`}>
-                                        <span>{idx === 0 ? 'Current' : 'Previous'}</span>
-                                        {n.analysis?.notamId && (
-                                            <span className="font-mono text-[8px] opacity-70 bg-slate-800 px-1 rounded">{n.analysis.notamId}</span>
-                                        )}
-                                    </div>
-                                    <div className={`rounded px-2.5 py-1.5 border-l-2 overflow-hidden ${n.status === 'red' ? 'border-red-500 bg-red-950/40' : n.status === 'orange' ? 'border-orange-500 bg-orange-950/40' : 'border-green-500 bg-green-950/20'}`}>
-                                        <div className="flex items-center justify-between mb-1 gap-2">
-                                            {n.analysis?.isEstimated && (
-                                                <span className="text-[8px] font-bold bg-amber-950/50 text-amber-500 px-1 rounded border border-amber-900/30 uppercase">EST</span>
-                                            )}
-                                            {(n.analysis?.hasInterference || /\b(JAMMING|SPOOFING|GPS UNREL|GNSS UNREL|GNSS SIGNAL INTERFERENCE|JAM|GPS)\b/i.test(n.text)) && (
-                                                <span className="text-[8px] font-bold bg-indigo-950/50 text-indigo-400 px-1 rounded border border-indigo-900/30 uppercase">GNSS ALRT</span>
+                                <div key={n.id} className="relative pb-4 border-b border-slate-800/50 last:border-0 last:pb-0">
+                                    <div className="flex items-center justify-between mb-2 gap-2 overflow-hidden">
+                                        <div className={`text-[9px] font-bold tracking-widest uppercase flex items-center gap-2 shrink-0 ${idx === 0 ? 'text-blue-400' : 'text-slate-500'}`}>
+                                            <span>{idx === 0 ? 'Current' : 'Previous'}</span>
+                                            {n.analysis?.notamId && (
+                                                <span className="font-mono text-[8px] opacity-70 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700/30">
+                                                    {n.analysis.notamId}
+                                                </span>
                                             )}
                                         </div>
-                                        <div className="font-mono text-[10px] text-slate-300 leading-relaxed line-clamp-3 break-words">
+                                        {n.status !== 'unknown' && (
+                                            <div className="flex items-center gap-1.5 min-w-0">
+                                                <span className="font-mono text-[8px] opacity-70 bg-slate-800 px-1 py-0.5 rounded border border-slate-700/30 text-slate-400 font-bold shrink-0">
+                                                    {n.id.split('/')[0]}
+                                                </span>
+                                                <span className="text-[8px] font-bold text-slate-500 uppercase truncate">
+                                                    {n.status === 'red' ? 'Closed' : 'Restricted'}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    <div className={`rounded-xl px-3 py-2.5 border-l-4 ${n.status === 'red' ? 'border-red-500 bg-red-950/40' : n.status === 'orange' ? 'border-orange-500 bg-orange-950/40' : 'border-green-500 bg-green-950/20'}`}>
+                                        <div className="flex items-center gap-1.5 mb-2.5 flex-wrap">
+                                            {n.analysis?.isEstimated && (
+                                                <span className="text-[8px] font-bold bg-amber-950/50 text-amber-500 px-1.5 py-0.5 rounded border border-amber-900/30 uppercase">EST</span>
+                                            )}
+                                            {(n.analysis?.hasInterference || /\b(JAMMING|SPOOFING|GPS UNREL|GNSS UNREL|GNSS SIGNAL INTERFERENCE|JAM|GPS)\b/i.test(n.text)) && (
+                                                <span className="text-[8px] font-bold bg-indigo-950/50 text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-900/30 uppercase">GNSS ALRT</span>
+                                            )}
+                                        </div>
+                                        
+                                        <div className="font-mono text-[10px] text-slate-300 leading-relaxed break-words mb-2.5">
                                             {extractEField(n.text) || '(No description)'}
                                         </div>
 
                                         {(n.analysis?.fField || n.analysis?.gField) && (
-                                            <div className="text-[9px] text-slate-400 font-mono mt-2 border-t border-white/5 pt-1.5 flex items-center gap-1.5">
+                                            <div className="text-[9px] text-slate-400 font-mono mt-2.5 pt-2.5 border-t border-white/5 flex items-center gap-1.5">
                                                 <span className="opacity-50">LVL:</span>
-                                                <span className="text-slate-300 font-bold">
+                                                <span className="text-slate-200 font-bold">
                                                     {n.analysis?.fField || 'SFC'} – {n.analysis?.gField || 'UNL'}
                                                 </span>
                                             </div>
@@ -181,8 +202,8 @@ const FIRFlipCard: React.FC<FIRFlipCardProps> = ({ fir, notamData, loading }) =>
                     </div>
 
                     {checkedAt && (
-                        <div className="flex-shrink-0 pt-1.5 mt-1 border-t border-slate-800/60 flex items-center gap-1.5 text-[9px] text-slate-600">
-                            <Clock size={8} />
+                        <div className="flex-shrink-0 pt-2 border-t border-slate-800/60 flex items-center gap-1.5 text-[9px] text-slate-600 font-medium justify-center">
+                            <Clock size={10} className="text-slate-700" />
                             <span>Checked {formatUtcTimestamp(checkedAt)}</span>
                         </div>
                     )}
