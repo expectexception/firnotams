@@ -79,14 +79,18 @@ const NotamDetailCard: React.FC<{ notam: NotamItem; rank: number }> = ({ notam, 
     const pillCls = SEVERITY_PILL[meta.severity] ?? SEVERITY_PILL.info;
 
     const rankLabel = `#${rank + 1}`;
-    const rankColor = rank === 0 ? 'text-red-400' : rank === 1 ? 'text-amber-400' : 'text-slate-500';
+    const rankCls = rank === 0
+        ? 'inline-flex items-center justify-center bg-red-500 text-white px-1.5 py-0.5 rounded text-[8px] font-black tracking-tighter'
+        : rank === 1
+            ? 'inline-flex items-center justify-center bg-amber-500 text-white px-1.5 py-0.5 rounded text-[8px] font-black tracking-tighter'
+            : 'text-slate-500 font-bold text-[9px] tracking-widest';
 
     return (
         <div className={`rounded-xl border-l-2 ${stripCls} px-3.5 py-3 flex flex-col gap-2`}>
             {/* Card header: rank label + Q-code + NOTAM ID */}
             <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2">
-                    <span className={`text-[9px] font-black uppercase tracking-[0.15em] ${rankColor}`}>{rankLabel}</span>
+                    <span className={`uppercase font-black ${rankCls}`}>{rankLabel}</span>
                     {meta.qCodeFull && (
                         <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[9px] font-mono font-bold tracking-widest ${pillCls}`}>
                             {meta.qCodeFull}

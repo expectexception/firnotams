@@ -245,7 +245,7 @@ const FIRCard: React.FC<FIRCardProps> = ({ fir, firStatus, notamData, loading = 
 
                 {/* ── BACK ── */}
                 <div className="flip-card-back p-4 flex flex-col gap-3 border border-slate-700/50">
-                    
+
                     {/* Back header */}
                     <div className="flex items-center justify-between flex-shrink-0 border-b border-slate-700/50 pb-2.5">
                         <div className="flex flex-col min-w-0 flex-1">

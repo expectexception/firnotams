@@ -57,6 +57,9 @@ const NOISE_PATTERNS: RegExp[] = [
     /\bBIRD\s+SANCTUAR/i,
 ];
 
+const OPS_REASONS_PATTERNS = /\b(DUE\s+TO\s+)?OPERATIONAL\s+(REASONS?|CONSTRAINTS?)|OPS\s+REASONS\b/i;
+const PAK_INDIA_RESTRICTION_PATTERN = /\bPAKISTAN\s+AIRSPACE\s+NOT\s+AVBL\s+FOR\s+INDIAN\s+REGISTERED\s+ACFT\b|\bPAKISTAN\s+AIRSPACE\s+NOT\s+AVBL\s+FOR\s+INDIAN\s+REGISTERED\s+ACFT\s+AND\s+ACFT\s+OPERATED\/OWNED\s+OR\s+LEASED\s+BY\s+INDIAN\s+AIRLINES\/OPERATORS\b/i;
+
 /*
  * Keywords in the E-field that confirm airspace operational relevance.
  * Covers all common NOTAM phrasings for closure / restriction / prohibition.
@@ -254,6 +257,8 @@ export function parseFirNotam(n: { text: string; analysis?: any }): FirNotamMeta
     let severity: FirNotamMeta['severity'];
     if (hardClosure) {
         severity = 'red';
+    } else if (PAK_INDIA_RESTRICTION_PATTERN.test(eField)) {
+        severity = 'red'; // Individual NOTAM item is Red
     } else if (isMiscQCode) {
         severity = 'warn';
     } else if (known) {
@@ -547,9 +552,6 @@ const OMAE_PARTIAL_CLOSURE_PATTERNS: RegExp[] = [
     /\bOVERFLIGHTS\s+ARE\s+ONLY\s+AVBL\b/i,
 ];
 
-const OPS_REASONS_PATTERNS = /\b(DUE\s+TO\s+)?OPERATIONAL\s+(REASONS?|CONSTRAINTS?)|OPS\s+REASONS\b/i;
-const PAK_INDIA_RESTRICTION_PATTERN = /\bPAKISTAN\s+AIRSPACE\s+NOT\s+AVBL\s+FOR\s+INDIAN\s+REGISTERED\s+ACFT\b|\bPAKISTAN\s+AIRSPACE\s+NOT\s+AVBL\s+FOR\s+INDIAN\s+REGISTERED\s+ACFT\s+AND\s+ACFT\s+OPERATED\/OWNED\s+OR\s+LEASED\s+BY\s+INDIAN\s+AIRLINES\/OPERATORS\b/i;
-
 export function isOpsReason(text: string): boolean {
     return OPS_REASONS_PATTERNS.test(extractEField(text));
 }
@@ -648,6 +650,9 @@ export function getSeverityScore(text: string): number {
 
     // Explicit closure language must win over weaker/misc Q-code labels.
     if (hasHardClosure(eField)) return 100;
+
+    // Pakistan restriction stays Orange (80) for aggregate FIR status, but UI card is Red
+    if (PAK_INDIA_RESTRICTION_PATTERN.test(eField)) return 80;
 
     // Prefer OMAE "partially closed" operational routing NOTAM over generic ESCAT advisories
     // so the primary card text reflects the latest routing constraints from API.
