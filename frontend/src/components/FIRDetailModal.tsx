@@ -94,7 +94,7 @@ const NotamDetailCard: React.FC<{ notam: NotamItem; rank: number }> = ({ notam, 
                     )}
                     {meta.isMiscQCode && (
                         <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border bg-yellow-950/80 border-yellow-700/60 text-yellow-300 text-[8px] font-bold">
-                            <AlertTriangle size={7} /> WRONG Q-CODE
+                            <AlertTriangle size={7} /> Misleading Q-CODE
                         </span>
                     )}
                 </div>

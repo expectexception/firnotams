@@ -548,7 +548,7 @@ const OMAE_PARTIAL_CLOSURE_PATTERNS: RegExp[] = [
 ];
 
 const OPS_REASONS_PATTERNS = /\b(DUE\s+TO\s+)?OPERATIONAL\s+(REASONS?|CONSTRAINTS?)|OPS\s+REASONS\b/i;
-const PAK_INDIA_RESTRICTION_PATTERN = /\bPAKISTAN\s+AIRSPACE\s+NOT\s+AVBL\s+FOR\s+INDIAN\s+REGISTERED\s+ACFT\b/i;
+const PAK_INDIA_RESTRICTION_PATTERN = /\bPAKISTAN\s+AIRSPACE\s+NOT\s+AVBL\s+FOR\s+INDIAN\s+REGISTERED\s+ACFT\b|\bPAKISTAN\s+AIRSPACE\s+NOT\s+AVBL\s+FOR\s+INDIAN\s+REGISTERED\s+ACFT\s+AND\s+ACFT\s+OPERATED\/OWNED\s+OR\s+LEASED\s+BY\s+INDIAN\s+AIRLINES\/OPERATORS\b/i;
 
 export function isOpsReason(text: string): boolean {
     return OPS_REASONS_PATTERNS.test(extractEField(text));
@@ -838,18 +838,24 @@ export function selectBestFirNotams(rawNotams: NotamItem[]): SelectionResult {
     });
 
     // Sort Order:
+    // 0. Absolute Top Priority (Pak/India Restriction) - Category 0 wins regardless of date
     // 1. After Cutoff (True > False) - Post 28 Feb 2026 priority
     // 2. Category Priority (LP > LC > Ops > GNSS)
     // 3. Date newest first (Recency)
     scored.sort((a, b) => {
+        const aCat = getCategoryPriority(a.notam.text);
+        const bCat = getCategoryPriority(b.notam.text);
+
+        // Tier 0: Absolute Global Priority (Category 0)
+        if (aCat === 0 && bCat !== 0) return -1;
+        if (bCat === 0 && aCat !== 0) return 1;
+
         // Tier 1: Cutoff Priority
         if (a.afterCutoff !== b.afterCutoff) {
             return a.afterCutoff ? -1 : 1;
         }
 
         // Tier 2: Category Priority
-        const aCat = getCategoryPriority(a.notam.text);
-        const bCat = getCategoryPriority(b.notam.text);
         if (aCat !== bCat) {
             return aCat - bCat;
         }
@@ -910,14 +916,19 @@ export function selectTop3FirNotams(rawNotams: NotamItem[]): { notams: NotamItem
     });
 
     scored.sort((a, b) => {
+        const aCat = getCategoryPriority(a.notam.text);
+        const bCat = getCategoryPriority(b.notam.text);
+
+        // Tier 0: Absolute Global Priority (Category 0)
+        if (aCat === 0 && bCat !== 0) return -1;
+        if (bCat === 0 && aCat !== 0) return 1;
+
         // Tier 1: Cutoff Priority
         if (a.afterCutoff !== b.afterCutoff) {
             return a.afterCutoff ? -1 : 1;
         }
 
         // Tier 2: Category Priority
-        const aCat = getCategoryPriority(a.notam.text);
-        const bCat = getCategoryPriority(b.notam.text);
         if (aCat !== bCat) {
             return aCat - bCat;
         }
