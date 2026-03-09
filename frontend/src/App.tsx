@@ -39,7 +39,7 @@ function App() {
             })
             .catch(err => {
                 console.error('Failed to load system config:', err);
-                setError('Failed to connect to backend configuration.');
+                setError('Unable to connect to the NOTAM service. Please check your connection and try again.');
                 setLoading(false);
                 setFirLoading(false);
             });
@@ -347,9 +347,6 @@ function App() {
                         <AlertCircle size={16} className="text-red-400 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                             <span className="text-red-300 text-sm">{error}</span>
-                            <span className="text-red-400/70 text-xs ml-2">
-                                Make sure the backend is running on port 3001.
-                            </span>
                         </div>
                         <button
                             onClick={() => setError(null)}
