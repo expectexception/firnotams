@@ -54,17 +54,17 @@ const Home: React.FC<HomeProps> = ({ geoJson, firs, firData, notamData, loading 
     return (
         <div className="flex-1 w-full h-full relative">
             {/* Map Filter Controls */}
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[1000] w-max max-w-[calc(100%-2rem)] pb-safe">
-                <div className="flex items-center gap-1.5 bg-slate-900/85 backdrop-blur-md border border-slate-700/50 px-2 py-1.5 rounded-full shadow-2xl overflow-x-auto hide-scrollbar">
-                    <div className="flex items-center gap-1 px-2 border-r border-slate-700/50 mr-0.5 flex-shrink-0">
-                        <Filter size={13} className="text-slate-400" />
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden sm:inline">Filter</span>
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-[1000] w-max max-w-[calc(100%-2rem)] pb-safe transition-all duration-300 transform hover:-translate-y-1">
+                <div className="flex items-center gap-2 bg-slate-950/60 backdrop-blur-xl border border-white/10 px-3 py-2 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-x-auto hide-scrollbar ring-1 ring-white/5">
+                    <div className="flex items-center gap-1.5 px-2 border-r border-slate-700/50 mr-1 flex-shrink-0">
+                        <Filter size={14} className="text-slate-400" />
+                        <span className="text-[11px] font-bold text-slate-300 uppercase tracking-widest hidden sm:inline">Filters</span>
                     </div>
 
                     {/* All */}
                     <button
                         onClick={() => setStatusFilter('all')}
-                        className={`flex-shrink-0 px-2.5 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 ${statusFilter === 'all' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'text-slate-400 hover:text-slate-200'}`}
+                        className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-1.5 ${statusFilter === 'all' ? 'bg-blue-600/90 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400/30' : 'bg-transparent text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'}`}
                     >
                         <span>All</span>
                         <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'all' ? 'bg-white/20' : 'bg-slate-800'}`}>{counts.all}</span>
@@ -73,41 +73,41 @@ const Home: React.FC<HomeProps> = ({ geoJson, firs, firData, notamData, loading 
                     {/* Closed */}
                     <button
                         onClick={() => setStatusFilter('red')}
-                        className={`flex-shrink-0 px-2.5 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 ${statusFilter === 'red' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-slate-400 hover:text-red-400'}`}
+                        className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-1.5 ${statusFilter === 'red' ? 'bg-red-600/90 text-white shadow-[0_0_15px_rgba(220,38,38,0.5)] border border-red-400/30' : 'bg-transparent text-slate-400 hover:text-red-300 hover:bg-red-500/10 border border-transparent'}`}
                     >
-                        <div className={`w-1.5 h-1.5 rounded-full bg-red-500 ${statusFilter !== 'red' ? 'opacity-50' : 'animate-pulse'}`} />
+                        <div className={`w-1.5 h-1.5 rounded-full bg-red-400 ${statusFilter !== 'red' ? 'opacity-50' : 'animate-[red-pulse_2s_ease-in-out_infinite]'}`} />
                         <span>Closed</span>
-                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'red' ? 'bg-black/20' : 'bg-red-500/10 text-red-500'}`}>{counts.red}</span>
+                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'red' ? 'bg-black/20' : 'bg-red-500/20 text-red-400'}`}>{counts.red}</span>
                     </button>
 
                     {/* Restricted */}
                     <button
                         onClick={() => setStatusFilter('orange')}
-                        className={`flex-shrink-0 px-2.5 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 ${statusFilter === 'orange' ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/40' : 'text-slate-400 hover:text-orange-400'}`}
+                        className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-1.5 ${statusFilter === 'orange' ? 'bg-orange-600/90 text-white shadow-[0_0_15px_rgba(234,88,12,0.5)] border border-orange-400/30' : 'bg-transparent text-slate-400 hover:text-orange-300 hover:bg-orange-500/10 border border-transparent'}`}
                     >
-                        <div className={`w-1.5 h-1.5 rounded-full bg-orange-500 ${statusFilter !== 'orange' ? 'opacity-50' : ''}`} />
+                        <div className={`w-1.5 h-1.5 rounded-full bg-orange-400 ${statusFilter !== 'orange' ? 'opacity-50' : ''}`} />
                         <span>Restricted</span>
-                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'orange' ? 'bg-black/20' : 'bg-orange-500/10 text-orange-500'}`}>{counts.orange}</span>
+                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'orange' ? 'bg-black/20' : 'bg-orange-500/20 text-orange-400'}`}>{counts.orange}</span>
                     </button>
 
                     {/* ESCAT */}
                     <button
                         onClick={() => setStatusFilter('escat')}
-                        className={`flex-shrink-0 px-2.5 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 ${statusFilter === 'escat' ? 'bg-red-950 text-red-300 border border-red-600/60 shadow-lg shadow-red-900/30' : 'text-slate-400 hover:text-red-400 hover:border-red-900/50 border border-transparent'}`}
+                        className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-1.5 ${statusFilter === 'escat' ? 'bg-red-950/80 text-red-200 border border-red-500/60 shadow-[0_0_15px_rgba(239,68,68,0.4)]' : 'bg-transparent text-slate-400 hover:text-red-400 hover:bg-red-900/30 border border-transparent'}`}
                     >
-                        <AlertTriangle size={11} className={statusFilter === 'escat' ? 'text-red-400' : ''} />
+                        <AlertTriangle size={12} className={statusFilter === 'escat' ? 'text-red-400' : ''} />
                         <span>ESCAT</span>
-                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'escat' ? 'bg-red-500/20' : 'bg-red-900/30 text-red-400'}`}>{counts.escat}</span>
+                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'escat' ? 'bg-red-500/30 text-white' : 'bg-red-900/40 text-red-400'}`}>{counts.escat}</span>
                     </button>
 
                     {/* GNSS */}
                     <button
                         onClick={() => setStatusFilter('interference')}
-                        className={`flex-shrink-0 px-2.5 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 ${statusFilter === 'interference' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/40' : 'text-slate-400 hover:text-indigo-400'}`}
+                        className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider uppercase transition-all duration-300 flex items-center gap-1.5 ${statusFilter === 'interference' ? 'bg-indigo-600/90 text-white shadow-[0_0_15px_rgba(79,70,229,0.5)] border border-indigo-400/30' : 'bg-transparent text-slate-400 hover:text-indigo-300 hover:bg-indigo-500/10 border border-transparent'}`}
                     >
-                        <div className={`w-1.5 h-1.5 rounded-full bg-indigo-400 ${statusFilter !== 'interference' ? 'opacity-50' : 'animate-pulse'}`} />
+                        <div className={`w-1.5 h-1.5 rounded-full bg-indigo-300 ${statusFilter !== 'interference' ? 'opacity-50' : 'animate-pulse'}`} />
                         <span>GNSS</span>
-                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'interference' ? 'bg-black/20' : 'bg-indigo-500/10 text-indigo-400'}`}>{counts.interference}</span>
+                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${statusFilter === 'interference' ? 'bg-black/20 text-white' : 'bg-indigo-500/20 text-indigo-400'}`}>{counts.interference}</span>
                     </button>
                 </div>
             </div>

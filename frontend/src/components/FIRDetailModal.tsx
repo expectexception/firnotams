@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { X, Wifi, WifiOff, AlertTriangle, Navigation, Clock, SignalLow } from 'lucide-react';
+import { X, Wifi, WifiOff, AlertTriangle, Navigation, Clock, SignalLow, ChevronDown, ChevronUp, CalendarClock } from 'lucide-react';
 import { FirInfo, FirStatusItem, LocationNotams, NotamStatus, NotamItem } from '../types';
 import { parseFirNotam, parseDField, getDuration, isOpsReason } from '../utils/notamParsers';
 
@@ -70,27 +70,38 @@ function parseNotamStartDate(notam: NotamItem): Date | null {
 
 // ── Single NOTAM card for the popup ─────────────────────────
 
-const NotamDetailCard: React.FC<{ notam: NotamItem; rank: number }> = ({ notam, rank }) => {
+const NotamDetailCard: React.FC<{ notam: NotamItem; rank: number; isUpcoming?: boolean }> = ({ notam, rank, isUpcoming }) => {
     const meta = parseFirNotam(notam);
     const dSched = parseDField(notam.text);
     const { start, end } = getDuration(notam);
 
-    const stripCls = SEVERITY_STRIP[meta.severity] ?? SEVERITY_STRIP.info;
-    const pillCls = SEVERITY_PILL[meta.severity] ?? SEVERITY_PILL.info;
+    const stripCls = isUpcoming
+        ? 'border-teal-500/50 bg-teal-950/20'
+        : (SEVERITY_STRIP[meta.severity] ?? SEVERITY_STRIP.info);
+    const pillCls = isUpcoming
+        ? 'bg-teal-950/80 border-teal-700/60 text-teal-300'
+        : (SEVERITY_PILL[meta.severity] ?? SEVERITY_PILL.info);
 
-    const rankLabel = `#${rank + 1}`;
-    const rankCls = rank === 0
-        ? 'inline-flex items-center justify-center bg-red-500 text-white px-1.5 py-0.5 rounded text-[8px] font-black tracking-tighter'
-        : rank === 1
-            ? 'inline-flex items-center justify-center bg-amber-500 text-white px-1.5 py-0.5 rounded text-[8px] font-black tracking-tighter'
-            : 'text-slate-500 font-bold text-[9px] tracking-widest';
+    const rankLabel = isUpcoming ? `U${rank + 1}` : `#${rank + 1}`;
+    const rankCls = isUpcoming
+        ? 'inline-flex items-center justify-center bg-teal-700 text-white px-1.5 py-0.5 rounded text-[8px] font-black tracking-tighter'
+        : rank === 0
+            ? 'inline-flex items-center justify-center bg-red-500 text-white px-1.5 py-0.5 rounded text-[8px] font-black tracking-tighter'
+            : rank === 1
+                ? 'inline-flex items-center justify-center bg-amber-500 text-white px-1.5 py-0.5 rounded text-[8px] font-black tracking-tighter'
+                : 'text-slate-500 font-bold text-[9px] tracking-widest';
 
     return (
-        <div className={`rounded-xl border-l-2 ${stripCls} px-3.5 py-3 flex flex-col gap-2`}>
+        <div className={`rounded-xl border-l-2 ${stripCls} px-3.5 py-3 flex flex-col gap-2 ${isUpcoming ? 'opacity-80' : ''}`}>
             {/* Card header: rank label + Q-code + NOTAM ID */}
             <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2">
                     <span className={`uppercase font-black ${rankCls}`}>{rankLabel}</span>
+                    {isUpcoming && (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border bg-teal-950/80 border-teal-600/50 text-teal-300 text-[8px] font-bold tracking-wider">
+                            <CalendarClock size={7} /> UPCOMING
+                        </span>
+                    )}
                     {meta.qCodeFull && (
                         <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[9px] font-mono font-bold tracking-widest ${pillCls}`}>
                             {meta.qCodeFull}
@@ -121,7 +132,7 @@ const NotamDetailCard: React.FC<{ notam: NotamItem; rank: number }> = ({ notam, 
             {(meta.qSubject || meta.isEnroute) && (
                 <div className="flex items-center gap-1.5 flex-wrap">
                     {meta.qSubject && (
-                        <span className={`text-[10px] font-bold uppercase tracking-wider ${meta.severity === 'red' ? 'text-red-400' : meta.severity === 'orange' ? 'text-amber-400' : 'text-slate-400'}`}>
+                        <span className={`text-[10px] font-bold uppercase tracking-wider ${isUpcoming ? 'text-teal-400' : meta.severity === 'red' ? 'text-red-400' : meta.severity === 'orange' ? 'text-amber-400' : 'text-slate-400'}`}>
                             {meta.qSubject} {meta.qCondition}
                         </span>
                     )}
@@ -148,7 +159,7 @@ const NotamDetailCard: React.FC<{ notam: NotamItem; rank: number }> = ({ notam, 
                 {(start || end) && (
                     <div className="flex items-center gap-1 text-slate-400">
                         <Clock size={9} className="text-slate-600" />
-                        {start && <span className="text-slate-200">{start}</span>}
+                        {start && <span className={isUpcoming ? 'text-teal-300' : 'text-slate-200'}>{start}</span>}
                         {start && end && <span className="text-slate-700">→</span>}
                         {end && <span className="text-slate-200">{end}</span>}
                     </div>
@@ -170,20 +181,46 @@ const FIRDetailModal: React.FC<FIRDetailModalProps> = ({ fir, firStatus, notamDa
     const status: NotamStatus = loading && !firStatus ? 'unknown' : (firStatus?.status ?? 'unknown');
     const hasEscat = firStatus?.hasEscat ?? notamData?.hasEscat ?? false;
     const [startDateFilter, setStartDateFilter] = useState('');
+    const [upcomingExpanded, setUpcomingExpanded] = useState(true);
 
     const allNotams = notamData?.notams ?? [];
-    const filteredNotams = useMemo(() => {
-        if (!startDateFilter) return allNotams;
+    const now = Date.now();
+    const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
 
+    // Split into active vs upcoming (starts within 72h, not yet active)
+    const { activeNotams, upcomingNotams } = useMemo(() => {
+        const active: NotamItem[] = [];
+        const upcoming: NotamItem[] = [];
+        for (const n of allNotams) {
+            const isInactive = n.analysis?.isActive === false;
+            if (isInactive) {
+                const startsAt = n.analysis?.startsAtUtc ? new Date(n.analysis.startsAtUtc).getTime() : null;
+                if (startsAt && startsAt > now && (startsAt - now) <= threeDaysMs) {
+                    upcoming.push(n);
+                    continue;
+                }
+            }
+            active.push(n);
+        }
+        // Sort upcoming by start time ascending
+        upcoming.sort((a, b) => {
+            const ta = a.analysis?.startsAtUtc ? new Date(a.analysis.startsAtUtc).getTime() : 0;
+            const tb = b.analysis?.startsAtUtc ? new Date(b.analysis.startsAtUtc).getTime() : 0;
+            return ta - tb;
+        });
+        return { activeNotams: active, upcomingNotams: upcoming };
+    }, [allNotams]);
+
+    const filteredActive = useMemo(() => {
+        if (!startDateFilter) return activeNotams;
         const threshold = new Date(`${startDateFilter}T00:00:00Z`).getTime();
-        if (isNaN(threshold)) return allNotams;
-
-        return allNotams.filter(notam => {
+        if (isNaN(threshold)) return activeNotams;
+        return activeNotams.filter(notam => {
             const start = parseNotamStartDate(notam);
             if (!start) return true;
             return start.getTime() >= threshold;
         });
-    }, [allNotams, startDateFilter]);
+    }, [activeNotams, startDateFilter]);
 
     const sc = STATUS_COLORS[status];
 
@@ -234,6 +271,11 @@ const FIRDetailModal: React.FC<FIRDetailModalProps> = ({ fir, firStatus, notamDa
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em]">
                             Operational NOTAMs
+                            {upcomingNotams.length > 0 && (
+                                <span className="ml-2 px-1.5 py-0.5 rounded bg-teal-950/70 border border-teal-700/50 text-teal-400 text-[8px] font-black">
+                                    +{upcomingNotams.length} upcoming
+                                </span>
+                            )}
                         </span>
                         <div className="sm:ml-auto flex items-center gap-2 flex-wrap">
                             <label htmlFor="startDateFilter" className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
@@ -255,7 +297,7 @@ const FIRDetailModal: React.FC<FIRDetailModalProps> = ({ fir, firStatus, notamDa
                                 </button>
                             )}
                             {allNotams.length > 0 && (
-                                <span className="text-[9px] text-slate-600 font-mono">{filteredNotams.length}/{allNotams.length}</span>
+                                <span className="text-[9px] text-slate-600 font-mono">{filteredActive.length}/{activeNotams.length}</span>
                             )}
                         </div>
                     </div>
@@ -273,23 +315,58 @@ const FIRDetailModal: React.FC<FIRDetailModalProps> = ({ fir, firStatus, notamDa
                             <WifiOff size={24} />
                             <p className="text-sm text-center">{notamData.error}</p>
                         </div>
-                    ) : filteredNotams.length === 0 ? (
+                    ) : filteredActive.length === 0 && upcomingNotams.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-12 gap-2 text-green-500/60">
                             <Wifi size={24} />
-                            <p className="text-sm font-medium text-center">No NOTAMs match the selected start date</p>
-                            <p className="text-[10px] text-slate-600 text-center">Try clearing or adjusting the start date filter</p>
+                            <p className="text-sm font-medium text-center">No active NOTAMs</p>
+                            <p className="text-[10px] text-slate-600 text-center">This FIR has no current operational notices</p>
                         </div>
                     ) : (
-                        filteredNotams.map((notam, idx) => (
-                            <NotamDetailCard key={notam.id} notam={notam} rank={idx} />
-                        ))
+                        <>
+                            {/* Active NOTAMs */}
+                            {filteredActive.length === 0 && startDateFilter ? (
+                                <div className="flex flex-col items-center justify-center py-8 gap-2 text-slate-500">
+                                    <p className="text-xs text-center">No active NOTAMs match the date filter</p>
+                                    <button onClick={() => setStartDateFilter('')} className="text-[9px] text-blue-400 hover:text-blue-300">
+                                        Clear filter
+                                    </button>
+                                </div>
+                            ) : (
+                                filteredActive.map((notam, idx) => (
+                                    <NotamDetailCard key={notam.id} notam={notam} rank={idx} />
+                                ))
+                            )}
+
+                            {/* Upcoming NOTAMs section */}
+                            {upcomingNotams.length > 0 && (
+                                <div className="mt-1 flex flex-col gap-2">
+                                    {/* Section divider + toggle */}
+                                    <button
+                                        onClick={() => setUpcomingExpanded(p => !p)}
+                                        className="flex items-center gap-2 w-full group"
+                                    >
+                                        <div className="flex-1 border-t border-teal-800/40" />
+                                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-950/60 border border-teal-700/40 text-teal-400 text-[9px] font-bold tracking-widest uppercase group-hover:border-teal-500/60 transition-colors">
+                                            <CalendarClock size={9} />
+                                            Upcoming · next 72h · {upcomingNotams.length}
+                                            {upcomingExpanded ? <ChevronUp size={9} /> : <ChevronDown size={9} />}
+                                        </span>
+                                        <div className="flex-1 border-t border-teal-800/40" />
+                                    </button>
+
+                                    {upcomingExpanded && upcomingNotams.map((notam, idx) => (
+                                        <NotamDetailCard key={notam.id} notam={notam} rank={idx} isUpcoming />
+                                    ))}
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 
                 {/* ── Footer ── */}
                 <div className="px-5 py-2.5 border-t border-slate-800/60 flex-shrink-0 flex items-center justify-between">
-                    <span className="text-[9px] text-slate-600 font-mono tracking-widest">Data: FAA NOTAM Portal</span>
-                    <span className="text-[9px] text-slate-700 font-mono">B ≥ 28 Feb · Active</span>
+                    <span className="text-[9px] text-slate-600 font-mono tracking-widest">Data: FAA / Autorouter</span>
+                    <span className="text-[9px] text-slate-700 font-mono">{activeNotams.length} active · {upcomingNotams.length} upcoming</span>
                 </div>
             </div>
         </div>

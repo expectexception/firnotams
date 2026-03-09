@@ -14,5 +14,14 @@ export default defineConfig({
                 changeOrigin: true,
             }
         }
+    },
+    optimizeDeps: {
+        include: ['react-map-gl/maplibre', 'maplibre-gl'],
+        esbuildOptions: {
+            target: 'es2022'
+        }
+    },
+    build: {
+        target: 'es2022'
     }
 })

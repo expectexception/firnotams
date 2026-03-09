@@ -417,24 +417,38 @@ export async function fetchBulkNotams(
             const cachedDocs = await NotamCacheModel.findOne({ icao }).lean();
             if (cachedDocs) {
                 // Re-verify active status of cached NOTAMs using current time
-                const cachedItems = ((cachedDocs as any).notams || []).map((n: NotamItem) => {
+                const NOW_MS = Date.now();
+                const UPCOMING_WINDOW_MS = 3 * 24 * 60 * 60 * 1000; // 72 hours
+
+                const allRefreshed = ((cachedDocs as any).notams || []).map((n: NotamItem) => {
                     if (n.text) {
                         const freshAnalysis = extractNotamAnalysis(n.text);
                         return { ...n, analysis: freshAnalysis };
                     }
                     return n;
-                }).filter((n: NotamItem) => n.analysis?.isActive !== false);
+                });
+
+                // Active NOTAMs: used for status/escat/interference classification
+                const activeItems = allRefreshed.filter((n: NotamItem) => n.analysis?.isActive !== false);
+
+                // All NOTAMs sent to frontend: active + upcoming (starts within 72h)
+                const allCachedItems = allRefreshed.filter((n: NotamItem) => {
+                    if (n.analysis?.isActive !== false) return true; // currently active
+                    // Include future NOTAMs starting within the next 72 hours
+                    const startsAt = n.analysis?.startsAtUtc ? new Date(n.analysis.startsAtUtc).getTime() : null;
+                    return startsAt !== null && startsAt > NOW_MS && (startsAt - NOW_MS) <= UPCOMING_WINDOW_MS;
+                });
 
                 const finalStatus = isIcaoFir(icao)
-                    ? classifyFirRegionStatus(icao, cachedItems, [])
-                    : aggregate(cachedItems.map((n: NotamItem) => n.status));
+                    ? classifyFirRegionStatus(icao, activeItems, [])
+                    : aggregate(activeItems.map((n: NotamItem) => n.status));
 
                 out[icao] = {
                     icao,
                     status: finalStatus,
-                    hasEscat: cachedItems.some((n: NotamItem) => n.hasEscat),
-                    hasInterference: cachedItems.some((n: NotamItem) => n.hasInterference),
-                    notams: cachedItems,
+                    hasEscat: activeItems.some((n: NotamItem) => n.hasEscat),
+                    hasInterference: activeItems.some((n: NotamItem) => n.hasInterference),
+                    notams: allCachedItems, // includes upcoming NOTAMs for frontend display
                     cachedAt: (cachedDocs as any).cachedAt,
                     dataSource: 'db-cache',
                 };
