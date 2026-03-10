@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { AirportInfo, FirInfo, SystemConfig, LocationNotams, FirStatusItem, BulkNotamResponse, BulkFirResponse } from '../types';
 import { fetchBulkNotams, fetchBulkFirs, fetchConfig } from '../api/notams';
 import { selectTop3FirNotams } from '../utils/notamParsers';
+import { getCachedGeoJSON, cacheGeoJSON } from '../utils/cache';
 
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -37,16 +38,42 @@ export function useNotamData() {
             });
     }, []);
 
-    // Load GeoJSON once
+    // Load GeoJSON once with IndexedDB caching
     useEffect(() => {
-        fetch('fir.geojson')
-            .then(res => res.json())
-            .then((data) => {
+        const GEOJSON_CACHE_KEY = 'fir_geojson';
+
+        async function loadGeo() {
+            try {
+                // 1. Try to get from IndexedDB first
+                const cachedData = await getCachedGeoJSON(GEOJSON_CACHE_KEY);
+                if (cachedData) {
+                    console.log('GeoJSON loaded from IndexedDB cache');
+                    setGeoJson(cachedData as GeoJSON.FeatureCollection);
+                    return;
+                }
+
+                // 2. If not in cache, fetch and store
+                console.log('GeoJSON not in cache, fetching...');
+                const res = await fetch('fir.geojson');
+                const data = await res.json();
                 setGeoJson(data as GeoJSON.FeatureCollection);
-            })
-            .catch(err => {
+                
+                // Store in IndexedDB for next time
+                await cacheGeoJSON(GEOJSON_CACHE_KEY, data);
+                console.log('GeoJSON cached to IndexedDB');
+            } catch (err) {
                 console.error('Failed to load GeoJSON:', err);
-            });
+                // Fallback: try direct fetch if DB fails
+                fetch('fir.geojson')
+                    .then(res => res.json())
+                    .then((data) => {
+                        setGeoJson(data as GeoJSON.FeatureCollection);
+                    })
+                    .catch(e => console.error('GeoJSON total failure:', e));
+            }
+        }
+
+        loadGeo();
     }, []);
 
     const loadAllData = useCallback(async (isManual = false) => {
