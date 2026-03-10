@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { X, Wifi, WifiOff, AlertTriangle, Navigation, Clock, SignalLow, ChevronDown, ChevronUp, CalendarClock } from 'lucide-react';
 import { FirInfo, FirStatusItem, LocationNotams, NotamStatus, NotamItem } from '../types';
 import { parseFirNotam, parseDField, getDuration, isOpsReason } from '../utils/notamParsers';
@@ -182,6 +182,15 @@ const FIRDetailModal: React.FC<FIRDetailModalProps> = ({ fir, firStatus, notamDa
     const hasEscat = firStatus?.hasEscat ?? notamData?.hasEscat ?? false;
     const [startDateFilter, setStartDateFilter] = useState('');
     const [upcomingExpanded, setUpcomingExpanded] = useState(true);
+    const upcomingRef = useRef<HTMLDivElement>(null);
+
+    const scrollToUpcoming = () => {
+        setUpcomingExpanded(true);
+        // Small delay to ensure the section is expanded before scrolling
+        setTimeout(() => {
+            upcomingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
+    };
 
     const allNotams = notamData?.notams ?? [];
     const now = Date.now();
@@ -269,14 +278,20 @@ const FIRDetailModal: React.FC<FIRDetailModalProps> = ({ fir, firStatus, notamDa
                 {/* Sub-header */}
                 <div className="px-4 sm:px-5 py-2 border-b border-slate-800/60 flex-shrink-0">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em]">
-                            Operational NOTAMs
+                        <div className="flex items-center gap-2">
+                            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em]">
+                                Operational NOTAMs
+                            </span>
                             {upcomingNotams.length > 0 && (
-                                <span className="ml-2 px-1.5 py-0.5 rounded bg-teal-950/70 border border-teal-700/50 text-teal-400 text-[8px] font-black">
-                                    +{upcomingNotams.length} upcoming
-                                </span>
+                                <button
+                                    onClick={scrollToUpcoming}
+                                    className="px-1.5 py-0.5 rounded bg-teal-950/70 border border-teal-700/50 text-teal-400 text-[12px] font-black hover:bg-teal-900/80 hover:border-teal-500/60 transition-all cursor-pointer flex items-center gap-1 active:scale-95"
+                                >
+                                    +{upcomingNotams.length} UPCOMING
+                                    <ChevronDown size={8} className="animate-bounce" />
+                                </button>
                             )}
-                        </span>
+                        </div>
                         <div className="sm:ml-auto flex items-center gap-2 flex-wrap">
                             <label htmlFor="startDateFilter" className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">
                                 Start ≥
@@ -339,7 +354,7 @@ const FIRDetailModal: React.FC<FIRDetailModalProps> = ({ fir, firStatus, notamDa
 
                             {/* Upcoming NOTAMs section */}
                             {upcomingNotams.length > 0 && (
-                                <div className="mt-1 flex flex-col gap-2">
+                                <div className="mt-1 flex flex-col gap-2" ref={upcomingRef}>
                                     {/* Section divider + toggle */}
                                     <button
                                         onClick={() => setUpcomingExpanded(p => !p)}
@@ -365,7 +380,7 @@ const FIRDetailModal: React.FC<FIRDetailModalProps> = ({ fir, firStatus, notamDa
 
                 {/* ── Footer ── */}
                 <div className="px-5 py-2.5 border-t border-slate-800/60 flex-shrink-0 flex items-center justify-between">
-                    <span className="text-[9px] text-slate-600 font-mono tracking-widest">Data: FAA / Autorouter</span>
+                    {/* <span className="text-[9px] text-slate-600 font-mono tracking-widest">Data: FAA / Autorouter</span> */}
                     <span className="text-[9px] text-slate-700 font-mono">{activeNotams.length} active · {upcomingNotams.length} upcoming</span>
                 </div>
             </div>

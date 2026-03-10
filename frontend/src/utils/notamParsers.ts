@@ -499,7 +499,8 @@ const QCODE_SCORE: Record<string, number> = {
     QRPCA: 100,
     QRWCA: 70,
     // Generic FIR misc
-    AFXX: 10,
+    AFXX: 20,
+    WELW: 5,
 };
 
 // Re-open / restoration keywords in E-field
@@ -576,11 +577,17 @@ function getCategoryPriority(text: string): number {
     // 3. Generic LC (Closed / Unavailable)
     if (qCode4.endsWith('LC') || /\b(CLOSED|CLSD|UNAVAILABLE|NOT\s+AVAILABLE)\b/i.test(eField)) return 3;
 
-    // 4. Ops reasons
-    if (OPS_REASONS_PATTERNS.test(eField)) return 4;
+    // 4. AFXX - Specific FIR priority after LC
+    if (qCode4 === 'AFXX') return 4;
 
-    // 5. Spoofing and jamming (GNSS)
-    if (hasInterference(text)) return 5;
+    // 5. Ops reasons
+    if (OPS_REASONS_PATTERNS.test(eField)) return 5;
+
+    // 6. Spoofing and jamming (GNSS)
+    if (hasInterference(text)) return 6;
+
+    // Bottom Priority: Military Exercises / Training
+    if (qCode4 === 'WELW' || /\bMILITARY\s+EXERCISE\b/i.test(eField)) return 100;
 
     return 99; // Lower priority for everything else
 }

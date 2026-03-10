@@ -1,194 +1,32 @@
-// testing small commit
-
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Routes, Route, NavLink, useLocation } from 'react-router-dom';
-import { RefreshCw, Plane, Wifi, WifiOff, AlertCircle, Map as MapIcon, Database } from 'lucide-react';
-import { LocationNotams, FirStatusItem, BulkNotamResponse, BulkFirResponse, AirportInfo, FirInfo, SystemConfig } from './types';
-import { fetchBulkNotams, fetchBulkFirs, fetchConfig } from './api/notams';
-import { selectTop3FirNotams } from './utils/notamParsers';
+import React, { useMemo, Suspense, lazy } from 'react';
+import { Routes, Route, NavLink } from 'react-router-dom';
+import { RefreshCw, Wifi, WifiOff, AlertCircle, Map as MapIcon, Database } from 'lucide-react';
+import { useNotamData } from './hooks/useNotamData';
 import UTCClock from './components/UTCClock';
-import ESCATBanner from './components/ESCATBanner';
-import Home from './pages/Home';
-import Notams from './pages/Notams';
 
-const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+// Lazy load pages for better performance
+const Home = lazy(() => import('./pages/Home'));
+const Notams = lazy(() => import('./pages/Notams'));
 
 function App() {
-    const [airports, setAirports] = useState<AirportInfo[]>([]);
-    const [firs, setFirs] = useState<FirInfo[]>([]);
-    const [systemConfig, setSystemConfig] = useState<SystemConfig | null>(null);
-    const [configLoaded, setConfigLoaded] = useState(false);
-
-    const [notamData, setNotamData] = useState<Record<string, LocationNotams>>({});
-    const [firData, setFirData] = useState<Record<string, FirStatusItem>>({});
-    const [geoJson, setGeoJson] = useState<GeoJSON.FeatureCollection | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [firLoading, setFirLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
-    const [refreshing, setRefreshing] = useState(false);
-
-    // Load System Config first
-    useEffect(() => {
-        fetchConfig()
-            .then(data => {
-                setAirports(data.airports);
-                setFirs(data.firs);
-                setSystemConfig(data.config);
-                setConfigLoaded(true);
-            })
-            .catch(err => {
-                console.error('Failed to load system config:', err);
-                setError('Unable to connect to the NOTAM service. Please check your connection and try again.');
-                setLoading(false);
-                setFirLoading(false);
-            });
-    }, []);
-
-    // Load GeoJSON once
-    useEffect(() => {
-        fetch('fir.geojson')
-            .then(res => res.json())
-            .then((data) => {
-                setGeoJson(data as GeoJSON.FeatureCollection);
-            })
-            .catch(err => {
-                console.error('Failed to load GeoJSON:', err);
-            });
-    }, []);
-
-    const loadAllData = useCallback(async (isManual = false) => {
-        if (!configLoaded || airports.length === 0) {
-            // console.log('[DEBUG] Skipping loadAllData: Config not ready or no airports.');
-            return;
-        }
-
-        if (isManual) setRefreshing(true);
-        else setLoading(true);
-
-        setError(null);
-
-        try {
-            const fetchAirportsEnabled = systemConfig?.fetchAirports !== false;
-
-            // Filter airports based on config
-            const activeAirports = fetchAirportsEnabled ? airports : [];
-            const allAirportIcaos = activeAirports.map(a => a.icao);
-            const allFirIcaos = firs.map(f => f.icao);
-
-            if (allAirportIcaos.length === 0 && allFirIcaos.length === 0) {
-                console.warn('[DEBUG] No ICAOs to fetch.');
-                setLoading(false);
-                return;
-            }
-
-            // console.log(`[DEBUG] Fetching NOTAMs for ${allAirportIcaos.length + allFirIcaos.length} locations...`);
-
-            const [notamRes, firRes] = await Promise.allSettled([
-                fetchBulkNotams([...allAirportIcaos, ...allFirIcaos], isManual),
-                fetchBulkFirs(allFirIcaos),
-            ]);
-
-            if (notamRes.status === 'fulfilled') {
-                const rawData = (notamRes.value as BulkNotamResponse).locations ?? {};
-                const processedData: Record<string, LocationNotams> = {};
-
-                for (const [icao, locationData] of Object.entries(rawData)) {
-                    const result = selectTop3FirNotams(locationData.notams ?? []);
-                    const fallbackFirStatus = firRes.status === 'fulfilled'
-                        ? (firRes.value as BulkFirResponse).firs?.[icao]?.status
-                        : undefined;
-                    const displayNotams = result.notams.length > 0
-                        ? result.notams
-                        : (locationData.notams ?? []).slice(0, 3);
-                    processedData[icao] = {
-                        ...locationData,
-                        status: result.status !== 'unknown' ? result.status : (fallbackFirStatus ?? locationData.status),
-                        hasEscat: result.hasEscat,
-                        hasInterference: result.hasInterference || locationData.hasInterference,
-                        notams: displayNotams,
-                    };
-                }
-
-                setNotamData(processedData);
-
-                if (firRes.status === 'fulfilled') {
-                    const rawFirData = (firRes.value as BulkFirResponse).firs ?? {};
-                    const patchedFirData: Record<string, FirStatusItem> = { ...rawFirData };
-
-                    // Status severity ranking (higher = worse)
-                    const severityRank: Record<string, number> = { unknown: 0, green: 1, orange: 2, red: 3 };
-                    const worstStatus = (a: string | undefined, b: string | undefined): string => {
-                        const ra = severityRank[a ?? 'unknown'] ?? 0;
-                        const rb = severityRank[b ?? 'unknown'] ?? 0;
-                        return ra >= rb ? (a ?? 'unknown') : (b ?? 'unknown');
-                    };
-
-                    for (const [icao, loc] of Object.entries(processedData)) {
-                        if (patchedFirData[icao]) {
-                            const backendStatus = patchedFirData[icao].status;
-                            const frontendStatus = loc.status !== 'unknown' ? loc.status : undefined;
-                            // Worst-wins: use whichever is more severe (backend or frontend keyword analysis)
-                            const combinedStatus = worstStatus(backendStatus, frontendStatus);
-                            patchedFirData[icao] = {
-                                ...patchedFirData[icao],
-                                status: combinedStatus as any,
-                                hasEscat: loc.hasEscat || patchedFirData[icao].hasEscat,
-                                hasInterference: loc.hasInterference ?? false,
-                            };
-                        }
-                    }
-                    setFirData(patchedFirData);
-                    setFirLoading(false);
-                } else {
-                    console.error('FIR fetch failed:', firRes.reason);
-                    setFirLoading(false);
-                }
-            } else {
-                console.error('NOTAM fetch failed:', notamRes.reason);
-                const reason = notamRes.reason instanceof Error ? notamRes.reason.message : String(notamRes.reason);
-                setError(`Failed to load NOTAM data: ${reason}`);
-
-                if (firRes.status === 'fulfilled') {
-                    const data = (firRes.value as BulkFirResponse).firs ?? {};
-                    setFirData(data);
-                    setFirLoading(false);
-                }
-            }
-
-            setLastRefresh(new Date());
-        } catch (err: any) {
-            console.error('Load Error:', err);
-            setError(err?.message || 'Unknown error occurred');
-        } finally {
-            setLoading(false);
-            setRefreshing(false);
-        }
-    }, [configLoaded, airports, firs]);
-
-    // Initial load
-    useEffect(() => {
-        if (configLoaded) loadAllData();
-    }, [configLoaded, loadAllData]);
-
-    // Auto-refresh every 5 minutes
-    useEffect(() => {
-        const interval = setInterval(() => loadAllData(), REFRESH_INTERVAL_MS);
-        return () => clearInterval(interval);
-    }, [loadAllData]);
-
-    // Collect ESCAT-affected locations
-    const escatLocations = Object.entries(notamData)
-        .filter(([, d]) => d.hasEscat)
-        .map(([icao]) => icao);
+    const {
+        firs,
+        notamData,
+        firData,
+        geoJson,
+        loading,
+        firLoading,
+        error,
+        lastRefresh,
+        refreshing,
+        loadAllData,
+        setError
+    } = useNotamData();
 
     // Format last refresh time
     const lastRefreshStr = lastRefresh
         ? `${String(lastRefresh.getUTCHours()).padStart(2, '0')}:${String(lastRefresh.getUTCMinutes()).padStart(2, '0')} UTC`
         : null;
-
-    const location = useLocation();
-    const isHome = location.pathname === '/';
 
     // Header counts — grouped by GeoJSON polygon to match the map parity
     const statusCounts = useMemo(() => {
@@ -205,7 +43,6 @@ function App() {
                 geoGroups[code] = { status: 'unknown', hasInterference: false, hasEscat: false };
             }
 
-            // Aggregate: worst status wins
             if (severityRank[status] > severityRank[geoGroups[code].status]) {
                 geoGroups[code].status = status;
             }
@@ -357,36 +194,37 @@ function App() {
                     </div>
                 )}
 
-                {/* ESCAT banner overlay */}
-                {/* {escatLocations.length > 0 && (
-                    <div className="absolute top-4 left-4 right-4 z-[999]">
-                        <ESCATBanner affectedLocations={escatLocations} />
-                    </div>
-                )} */}
-
-                <Routes>
-                    <Route path="/" element={<Home geoJson={geoJson} firs={firs} firData={firData} notamData={notamData} loading={firLoading} />} />
-                    <Route path="/notams" element={
-                        <div className="flex-1 w-full h-full overflow-y-auto flex flex-col">
-                            <div className="flex-1 w-full max-w-[1600px] mx-auto flex flex-col">
-                                <Notams firs={firs} firData={firData} notamData={notamData} loading={loading} />
-
-                                {/* Footer only on Notams page */}
-                                <footer className="border-t border-notam-border/40 pt-6 pb-8 mx-4 lg:mx-8 flex-shrink-0 mt-auto">
-                                    <div className="flex flex-col items-center gap-2">
-                                        <div className="flex items-center gap-2 px-3 py-1 bg-slate-900/40 border border-slate-800/60 rounded-full">
-                                            <div className="w-1 h-1 rounded-full bg-blue-500/80 shadow-[0_0_8px_rgba(59,130,246,0.4)]" />
-                                            <span className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">
-                                                SkyShield Crisis Management System
-                                            </span>
-                                        </div>
-
-                                    </div>
-                                </footer>
-                            </div>
+                <Suspense fallback={
+                    <div className="flex-1 flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-3">
+                            <div className="h-10 w-10 border-2 border-blue-400 border-t-transparent rounded-full spinner" />
+                            <span className="text-slate-400 text-sm font-medium animate-pulse">Initializing System…</span>
                         </div>
-                    } />
-                </Routes>
+                    </div>
+                }>
+                    <Routes>
+                        <Route path="/" element={<Home geoJson={geoJson} firs={firs} firData={firData} notamData={notamData} loading={firLoading} />} />
+                        <Route path="/notams" element={
+                            <div className="flex-1 w-full h-full overflow-y-auto flex flex-col">
+                                <div className="flex-1 w-full max-w-[1600px] mx-auto flex flex-col">
+                                    <Notams firs={firs} firData={firData} notamData={notamData} loading={loading} />
+
+                                    {/* Footer only on Notams page */}
+                                    <footer className="border-t border-notam-border/40 pt-6 pb-8 mx-4 lg:mx-8 flex-shrink-0 mt-auto">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div className="flex items-center gap-2 px-3 py-1 bg-slate-900/40 border border-slate-800/60 rounded-full">
+                                                <div className="w-1 h-1 rounded-full bg-blue-500/80 shadow-[0_0_8px_rgba(59,130,246,0.4)]" />
+                                                <span className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">
+                                                    SkyShield Crisis Management System
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </footer>
+                                </div>
+                            </div>
+                        } />
+                    </Routes>
+                </Suspense>
             </main>
         </div>
     );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useMemo } from 'react';
 import { FirInfo, FirStatusItem, LocationNotams, NotamStatus } from '../types';
 import { RotateCcw, Wifi, WifiOff, AlertTriangle, Route, Navigation, SignalLow, Clock } from 'lucide-react';
 import { parseFirNotam, getDuration, type FirNotamMeta } from '../utils/notamParsers';
@@ -56,31 +56,20 @@ const SEVERITY_BADGE: Record<string, string> = {
     info: 'bg-slate-800/80 border-slate-600/60 text-slate-300',
 };
 
-const SEVERITY_BAR: Record<string, string> = {
-    red: 'border-red-500 bg-red-950/30',
-    orange: 'border-amber-500 bg-amber-950/30',
-    warn: 'border-yellow-500 bg-yellow-950/20',
-    info: 'border-slate-600 bg-slate-900/40',
-};
-
 // ── Sub-components ──────────────────────────────────────────
 
-/** Pill-style badge for Q-code and scope */
-const QBadge: React.FC<{ meta: FirNotamMeta }> = ({ meta }) => {
+const QBadge: React.FC<{ meta: FirNotamMeta }> = memo(({ meta }) => {
     const cls = SEVERITY_BADGE[meta.severity] ?? SEVERITY_BADGE.info;
     return (
         <div className="flex items-center gap-1.5 flex-wrap">
-            {/* Q-code */}
             <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[9px] font-mono font-bold tracking-widest ${cls}`}>
                 {meta.qCodeFull || '?'}
             </span>
-            {/* Condition label */}
             {meta.qSubject && (
                 <span className={`text-[9px] font-bold uppercase tracking-wider ${meta.severity === 'red' ? 'text-red-400' : meta.severity === 'orange' ? 'text-amber-400' : meta.severity === 'warn' ? 'text-yellow-400' : 'text-slate-400'}`}>
                     {meta.qSubject} {meta.qCondition}
                 </span>
             )}
-            {/* Misc warning */}
             {meta.isMiscQCode && (
                 <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border bg-yellow-950/80 border-yellow-700/60 text-yellow-300 text-[8px] font-bold tracking-wider">
                     <AlertTriangle size={8} />
@@ -89,10 +78,9 @@ const QBadge: React.FC<{ meta: FirNotamMeta }> = ({ meta }) => {
             )}
         </div>
     );
-};
+});
 
-/** Scope / Keyword row */
-const ScopeTags: React.FC<{ meta: FirNotamMeta }> = ({ meta }) => {
+const ScopeTags: React.FC<{ meta: FirNotamMeta }> = memo(({ meta }) => {
     return (
         <div className="flex items-center gap-1 flex-wrap">
             {meta.isEnroute && (
@@ -113,10 +101,9 @@ const ScopeTags: React.FC<{ meta: FirNotamMeta }> = ({ meta }) => {
             )}
         </div>
     );
-};
+});
 
-/** Date range row */
-const DateRange: React.FC<{ meta: FirNotamMeta }> = ({ meta }) => {
+const DateRange: React.FC<{ meta: FirNotamMeta }> = memo(({ meta }) => {
     if (!meta.startFmt && !meta.endFmt) return null;
     return (
         <div className="flex items-center gap-1.5 font-mono text-[9px] text-slate-400 flex-wrap">
@@ -126,11 +113,11 @@ const DateRange: React.FC<{ meta: FirNotamMeta }> = ({ meta }) => {
             {meta.startFmt && !meta.endFmt && <span className="text-slate-600">(Permanent)</span>}
         </div>
     );
-};
+});
 
 // ── Main Component ──────────────────────────────────────────
 
-const FIRCard: React.FC<FIRCardProps> = ({ fir, firStatus, notamData, loading = false }) => {
+const FIRCard: React.FC<FIRCardProps> = memo(({ fir, firStatus, notamData, loading = false }) => {
     const [flipped, setFlipped] = useState(false);
 
     const status: NotamStatus = loading && !firStatus ? 'unknown' : (firStatus?.status ?? 'unknown');
@@ -138,8 +125,10 @@ const FIRCard: React.FC<FIRCardProps> = ({ fir, firStatus, notamData, loading = 
     const notams = notamData?.notams ?? [];
     const n = notams[0] ?? null;
 
-    // Parse FIR NOTAM metadata for structured display
-    const meta: FirNotamMeta | null = n ? parseFirNotam(n) : null;
+    // Memoize metadata parsing to avoid repeated work on re-renders
+    const meta: FirNotamMeta | null = useMemo(() => n ? parseFirNotam(n) : null, [n?.id, n?.text]);
+
+    const duration = useMemo(() => n ? getDuration(n) : null, [n?.id, n?.text]);
 
     return (
         <div
@@ -168,7 +157,6 @@ const FIRCard: React.FC<FIRCardProps> = ({ fir, firStatus, notamData, loading = 
                             </span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                            {/* Q-code badge on front */}
                             {meta && !meta.isMiscQCode && meta.qCodeFull && (
                                 <span className={`font-mono text-[8px] px-1.5 py-0.5 rounded border font-bold tracking-widest ${SEVERITY_BADGE[meta.severity] ?? SEVERITY_BADGE.info}`}>
                                     {meta.qCodeFull}
@@ -199,7 +187,6 @@ const FIRCard: React.FC<FIRCardProps> = ({ fir, firStatus, notamData, loading = 
                         <div className={`text-[11px] font-bold uppercase tracking-widest ${TEXT_CLR[status]}`}>
                             {loading && !firStatus ? 'Loading…' : STATUS_LABEL[status]}
                         </div>
-                        {/* Enroute + keyword quick-read */}
                         {meta && (meta.isEnroute || meta.keywords.length > 0) && (
                             <div className="flex items-center gap-1 flex-wrap">
                                 {meta.isEnroute && (
@@ -216,23 +203,20 @@ const FIRCard: React.FC<FIRCardProps> = ({ fir, firStatus, notamData, loading = 
                     </div>
 
                     {/* Duration row */}
-                    {n ? (() => {
-                        const { start, end } = getDuration(n);
-                        return (
-                            <div className={`rounded px-3 py-2 border-l-2 ${BAR[status]}`}>
-                                <div className="font-mono text-[9px] text-slate-600 tracking-widest mb-1">{n.id}</div>
-                                {(start || end) ? (
-                                    <div className="flex items-baseline gap-2 flex-wrap">
-                                        {start && <span className="text-sm font-bold text-slate-100">{start}</span>}
-                                        {start && end && <span className="text-slate-600 text-xs">→</span>}
-                                        {end && <span className="text-sm font-bold text-slate-100">{end}</span>}
-                                    </div>
-                                ) : (
-                                    <span className="text-[11px] text-slate-500">Permanent / no duration</span>
-                                )}
-                            </div>
-                        );
-                    })() : (
+                    {n && duration ? (
+                        <div className={`rounded px-3 py-2 border-l-2 ${BAR[status]}`}>
+                            <div className="font-mono text-[9px] text-slate-600 tracking-widest mb-1">{n.id}</div>
+                            {(duration.start || duration.end) ? (
+                                <div className="flex items-baseline gap-2 flex-wrap">
+                                    {duration.start && <span className="text-sm font-bold text-slate-100">{duration.start}</span>}
+                                    {duration.start && duration.end && <span className="text-slate-600 text-xs">→</span>}
+                                    {duration.end && <span className="text-sm font-bold text-slate-100">{duration.end}</span>}
+                                </div>
+                            ) : (
+                                <span className="text-[11px] text-slate-500">Permanent / no duration</span>
+                            )}
+                        </div>
+                    ) : (
                         <div className="flex items-center gap-2 text-slate-600 text-xs">
                             {notamData?.error ? (
                                 <><WifiOff size={12} /><span>{notamData.error}</span></>
@@ -279,16 +263,12 @@ const FIRCard: React.FC<FIRCardProps> = ({ fir, firStatus, notamData, loading = 
 
                     {n && meta ? (
                         <div className="flex-1 flex flex-col gap-3 min-h-0 overflow-y-auto custom-scrollbar pr-1">
-                            {/* Scope + keywords */}
-
-                            {/* Scope + keywords */}
                             {(meta.isEnroute || meta.keywords.length > 0 || !meta.afterCutoff) && (
                                 <div className="px-1">
                                     <ScopeTags meta={meta} />
                                 </div>
                             )}
 
-                            {/* Date range */}
                             {(meta.startFmt || meta.endFmt) && (
                                 <div className="bg-slate-900/50 rounded-lg px-3 py-2 border border-slate-800/80 flex items-center justify-between gap-3">
                                     <div className="text-[9px] text-slate-600 font-bold tracking-widest flex items-center gap-1.5 shrink-0">
@@ -299,7 +279,6 @@ const FIRCard: React.FC<FIRCardProps> = ({ fir, firStatus, notamData, loading = 
                                 </div>
                             )}
 
-                            {/* E-field text */}
                             {meta.eField && (
                                 <div className="flex-1 min-h-0 px-1 pb-2">
                                     <div className="text-[9px] text-slate-600 font-bold tracking-widest mb-1.5">NOTAM TEXT</div>
@@ -329,6 +308,6 @@ const FIRCard: React.FC<FIRCardProps> = ({ fir, firStatus, notamData, loading = 
             </div>
         </div>
     );
-};
+});
 
 export default FIRCard;

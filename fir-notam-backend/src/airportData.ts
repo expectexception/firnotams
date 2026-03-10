@@ -96,7 +96,7 @@ export const FIRS: FirInfo[] = [
     { icao: 'OOMM', name: 'Muscat FIR', geojsonCode: 'OOMM' },
     { icao: 'ORBB', name: 'Baghdad FIR', geojsonCode: 'ORBB' },
     { icao: 'OSTT', name: 'Damascus FIR', geojsonCode: 'OSTT' },
-    { icao: 'OTDF', name: 'Doha FIR', geojsonCode: 'OTDF' }, // Fallback to OBBB polygon if OTDF is missing
+    { icao: 'OTDF', name: 'Doha FIR', geojsonCode: 'OTDF' }, 
     { icao: 'OYSC', name: "Sana'a FIR", geojsonCode: 'OYSC' },
     { icao: 'HECC', name: 'Cairo FIR', geojsonCode: 'HECC' },
     { icao: 'UBBA', name: 'Baku FIR', geojsonCode: 'UBBA' },

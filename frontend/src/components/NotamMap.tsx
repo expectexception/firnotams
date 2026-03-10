@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState, useRef } from 'react';
+import React, { useMemo, useCallback, useState, useRef, memo } from 'react';
 // @ts-ignore
 import Map, { Source, Layer, MapRef } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
@@ -36,25 +36,13 @@ const STATUS_STROKE: Record<NotamStatus, string> = {
     unknown: '#cbd5e1',
 };
 
-function buildGeoLookup(firs: FirInfo[]): Record<string, string[]> {
-    const map: Record<string, string[]> = {};
-    for (const fir of firs) {
-        if (fir.geojsonCode) {
-            if (!map[fir.geojsonCode]) map[fir.geojsonCode] = [];
-            map[fir.geojsonCode].push(fir.icao);
-        }
-    }
-    return map;
-}
-
 const MAP_STYLE: any = {
     version: 8,
     sources: {
         cartodb: {
             type: 'raster',
             tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
-            tileSize: 256,
-            attribution: '&copy; CARTO'
+            tileSize: 256
         }
     },
     layers: [
@@ -77,52 +65,72 @@ const MAP_PROJECTION: any = { type: 'globe' };
 const INTERACTIVE_LAYER_IDS = ['fir-fills'];
 const MAP_CONTAINER_STYLE = { width: '100%', height: '100%', background: 'transparent' };
 
-const NotamMap: React.FC<NotamMapProps> = ({ geoJson, firs, firData, notamData: _notamData, loading, activeFilter = 'all', onFirClick }) => {
+const NotamMap: React.FC<NotamMapProps> = memo(({ geoJson, firs, firData, notamData: _notamData, loading, activeFilter = 'all', onFirClick }) => {
     const mapRef = useRef<MapRef>(null);
     const [hoverInfo, setHoverInfo] = useState<{ feature: any, x: number, y: number } | null>(null);
-    const geoLookup = useMemo(() => buildGeoLookup(firs), [firs]);
-
-    const getFeatureStatus = useCallback((feature: GeoJSON.Feature | undefined): { status: NotamStatus, isVisible: boolean, hasInterference: boolean, hasEscat: boolean } => {
-        const icaoCode = feature?.properties?.icaocode;
-        const targetIcaos = icaoCode ? geoLookup[icaoCode] : [];
-
-        if (!targetIcaos || targetIcaos.length === 0) {
-            return { status: 'unknown', isVisible: activeFilter === 'all', hasInterference: false, hasEscat: false };
+    
+    const geoLookup = useMemo(() => {
+        const map: Record<string, string[]> = {};
+        for (const fir of firs) {
+            if (fir.geojsonCode) {
+                if (!map[fir.geojsonCode]) map[fir.geojsonCode] = [];
+                map[fir.geojsonCode].push(fir.icao);
+            }
         }
+        return map;
+    }, [firs]);
 
-        let worstStatus: NotamStatus = 'unknown';
-        let hasInterference = false;
-        let hasEscat = false;
-
+    const featureStatusMap = useMemo(() => {
+        const statusMap: Record<string, { status: NotamStatus, hasInterference: boolean, hasEscat: boolean }> = {};
         const severityRank: Record<string, number> = { unknown: 0, green: 1, orange: 2, red: 3 };
 
-        for (const firIcao of targetIcaos) {
-            const data = firData[firIcao];
-            const nd = _notamData[firIcao];
-            const currentStatus = data?.status ?? 'unknown';
-            if (severityRank[currentStatus] > severityRank[worstStatus]) worstStatus = currentStatus;
-            if (data?.hasEscat || nd?.hasEscat) hasEscat = true;
-            if (data?.hasInterference || nd?.hasInterference) hasInterference = true;
-        }
+        if (!geoJson?.features) return statusMap;
 
-        let isVisible = true;
-        if (activeFilter !== 'all') {
-            if (activeFilter === 'escat') isVisible = hasEscat;
-            else if (activeFilter === 'interference') isVisible = hasInterference;
-            else isVisible = worstStatus === activeFilter;
-        }
+        for (const feature of geoJson.features) {
+            const icaoCode = feature.properties?.icaocode;
+            if (!icaoCode) continue;
 
-        return { status: worstStatus, isVisible, hasInterference, hasEscat };
-    }, [firData, _notamData, geoLookup, activeFilter]);
+            const targetIcaos = geoLookup[icaoCode];
+            if (!targetIcaos || targetIcaos.length === 0) {
+                statusMap[icaoCode] = { status: 'unknown', hasInterference: false, hasEscat: false };
+                continue;
+            }
+
+            let worstStatus: NotamStatus = 'unknown';
+            let hasInterference = false;
+            let hasEscat = false;
+
+            for (const firIcao of targetIcaos) {
+                const data = firData[firIcao];
+                const nd = _notamData[firIcao];
+                const currentStatus = data?.status ?? 'unknown';
+                if (severityRank[currentStatus] > severityRank[worstStatus]) worstStatus = currentStatus;
+                if (data?.hasEscat || nd?.hasEscat) hasEscat = true;
+                if (data?.hasInterference || nd?.hasInterference) hasInterference = true;
+            }
+
+            statusMap[icaoCode] = { status: worstStatus, hasInterference, hasEscat };
+        }
+        return statusMap;
+    }, [geoJson, geoLookup, firData, _notamData]);
 
     const styledGeoJson = useMemo(() => {
         if (!geoJson?.features) return null;
 
         const features = geoJson.features.map(f => {
-            const { status, isVisible, hasEscat, hasInterference } = getFeatureStatus(f as GeoJSON.Feature);
             const icaoCode = f.properties?.icaocode as string | undefined;
-            const hasTargets = icaoCode && geoLookup[icaoCode];
-            if (!isVisible || !hasTargets) return null;
+            if (!icaoCode || !geoLookup[icaoCode]) return null;
+
+            const { status, hasEscat, hasInterference } = featureStatusMap[icaoCode] || { status: 'unknown', hasEscat: false, hasInterference: false };
+
+            let isVisible = true;
+            if (activeFilter !== 'all') {
+                if (activeFilter === 'escat') isVisible = hasEscat;
+                else if (activeFilter === 'interference') isVisible = hasInterference;
+                else isVisible = status === activeFilter;
+            }
+
+            if (!isVisible) return null;
 
             return {
                 ...f,
@@ -141,7 +149,7 @@ const NotamMap: React.FC<NotamMapProps> = ({ geoJson, firs, firData, notamData: 
         }).filter(Boolean) as GeoJSON.Feature[];
 
         return { ...geoJson, features };
-    }, [geoJson, getFeatureStatus, loading, geoLookup]);
+    }, [geoJson, featureStatusMap, loading, activeFilter, geoLookup]);
 
     const onHover = useCallback((event: any) => {
         const { features, point } = event;
@@ -218,11 +226,8 @@ const NotamMap: React.FC<NotamMapProps> = ({ geoJson, firs, firData, notamData: 
                 <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-slate-950/95 shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)] backdrop-blur-xl"
                     style={{ minWidth: '210px', maxWidth: '268px' }}
                 >
-                    {/* Coloured top accent bar */}
                     <div className={`h-[2.5px] w-full ${ss.accentClass} opacity-70`} />
-
                     <div className="px-3.5 py-3">
-                        {/* FIR name row */}
                         <div className="flex items-start gap-2.5">
                             <div className={`mt-[5px] h-2 w-2 flex-shrink-0 rounded-full ${ss.dotClass}`} />
                             <div className="min-w-0 flex-1">
@@ -234,16 +239,10 @@ const NotamMap: React.FC<NotamMapProps> = ({ geoJson, firs, firData, notamData: 
                                 </p>
                             </div>
                         </div>
-
-                        {/* Separator */}
                         <div className="my-2.5 h-px bg-white/[0.06]" />
-
-                        {/* Status pill */}
                         <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10.5px] font-semibold tracking-wide ${ss.pillClass}`}>
                             {ss.label}
                         </span>
-
-                        {/* Alert badges */}
                         {(hasEscat || hasInterference) && (
                             <div className="mt-2 flex flex-wrap gap-1.5">
                                 {hasEscat && (
@@ -258,15 +257,11 @@ const NotamMap: React.FC<NotamMapProps> = ({ geoJson, firs, firData, notamData: 
                                 )}
                             </div>
                         )}
-
-                        {/* CTA hint */}
                         <p className="mt-2.5 text-[9.5px] font-medium uppercase tracking-[0.1em] text-slate-600">
                             Click to view NOTAMs →
                         </p>
                     </div>
                 </div>
-
-                {/* Downward arrow */}
                 <div className="absolute left-1/2 h-0 w-0 -translate-x-1/2 border-x-[6px] border-t-[6px] border-x-transparent border-t-slate-950" />
             </div>
         );
@@ -274,8 +269,6 @@ const NotamMap: React.FC<NotamMapProps> = ({ geoJson, firs, firData, notamData: 
 
     return (
         <div className="absolute inset-0 z-0 overflow-hidden bg-[#040914]">
-
-            {/* Star field */}
             <div
                 className="pointer-events-none absolute inset-0 z-0"
                 style={{
@@ -284,20 +277,13 @@ const NotamMap: React.FC<NotamMapProps> = ({ geoJson, firs, firData, notamData: 
                     backgroundRepeat: 'repeat',
                 }}
             />
-
-            {/* Nebula gradients */}
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(56,189,248,0.04),transparent_40%)]" />
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(129,140,248,0.05),transparent_50%)]" />
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_85%,rgba(16,185,129,0.03),transparent_40%)]" />
-
-            {/* Globe ambient glow */}
             <div className="pointer-events-none absolute left-1/2 top-1/2 h-[80vh] w-[80vh] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/10 blur-[130px]" />
-
-            {/* Loading overlay */}
             {loading && (
                 <div className="pointer-events-none absolute inset-0 z-[1000] flex items-center justify-center bg-slate-950/50 backdrop-blur-sm">
                     <div className="flex flex-col items-center gap-3">
-                        {/* Spinner */}
                         <div className="relative h-10 w-10">
                             <div className="absolute inset-0 rounded-full border-2 border-slate-700/50" />
                             <div className="absolute inset-0 rounded-full border-2 border-t-blue-400 border-r-transparent border-b-transparent border-l-transparent spinner" />
@@ -314,6 +300,7 @@ const NotamMap: React.FC<NotamMapProps> = ({ geoJson, firs, firData, notamData: 
             )}
 
             <Map
+                attributionControl={false}
                 ref={mapRef}
                 mapLib={maplibregl}
                 initialViewState={{ longitude: 55, latitude: 28, zoom: 2.5 }}
@@ -358,6 +345,6 @@ const NotamMap: React.FC<NotamMapProps> = ({ geoJson, firs, firData, notamData: 
             </Map>
         </div>
     );
-};
+});
 
 export default NotamMap;

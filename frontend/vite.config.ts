@@ -22,6 +22,15 @@ export default defineConfig({
         }
     },
     build: {
-        target: 'es2022'
+        target: 'es2022',
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+                    'vendor-map': ['maplibre-gl', 'react-map-gl/maplibre'],
+                    'vendor-icons': ['lucide-react']
+                }
+            }
+        }
     }
 })
