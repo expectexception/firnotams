@@ -4,6 +4,7 @@ import { fetchBulkNotams, fetchFirStatus } from './notamService';
 import { getAirportsByFir, AIRPORTS, FIRS } from './airportData';
 import { getAutoSyncState } from './autoSync';
 import { NotamCacheModel } from './models/NotamCache';
+import { fetchMetarFromProvider, fetchTafFromProvider } from './weatherService';
 
 const router = Router();
 
@@ -134,6 +135,33 @@ router.get('/notams/cache/bulk', async (req: Request, res: Response) => {
         });
     } catch (err: any) {
         console.error('Error in /api/notams/cache/bulk:', err);
+        return res.status(500).json({ error: err?.message || 'Internal server error' });
+    }
+});
+
+
+// GET /api/metar/:icao
+router.get('/metar/:icao', async (req: Request, res: Response) => {
+    try {
+        const { icao } = req.params;
+        if (!icao) return res.status(400).json({ error: 'Missing ICAO code' });
+        const data = await fetchMetarFromProvider(icao.toUpperCase());
+        if (!data) return res.status(404).json({ error: 'METAR not found' });
+        return res.json(data);
+    } catch (err: any) {
+        return res.status(500).json({ error: err?.message || 'Internal server error' });
+    }
+});
+
+// GET /api/taf/:icao
+router.get('/taf/:icao', async (req: Request, res: Response) => {
+    try {
+        const { icao } = req.params;
+        if (!icao) return res.status(400).json({ error: 'Missing ICAO code' });
+        const data = await fetchTafFromProvider(icao.toUpperCase());
+        if (!data) return res.status(404).json({ error: 'TAF not found' });
+        return res.json(data);
+    } catch (err: any) {
         return res.status(500).json({ error: err?.message || 'Internal server error' });
     }
 });

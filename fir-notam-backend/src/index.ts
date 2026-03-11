@@ -38,6 +38,8 @@ app.get('/', (_req, res) => {
             'GET /api/notams/cache/bulk?locations=OMAA,OMDB',
             'GET /api/health',
             'GET /api/sync/status',
+            'GET /api/taf/:icao',
+            'GET /api/metar/:icao',
         ],
     });
 });
@@ -52,6 +54,8 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`   - GET /api/notams/cache/bulk?locations=OMAA,OMDB`);
     console.log(`   - GET /api/health`);
     console.log(`   - GET /api/sync/status`);
+    console.log(`   - GET /api/taf/:icao`);
+    console.log(`   - GET /api/metar/:icao`);
 });
 
 export default app;

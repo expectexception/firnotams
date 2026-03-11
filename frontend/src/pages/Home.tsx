@@ -132,7 +132,7 @@ const Home: React.FC<HomeProps> = ({ geoJson, firs, firData, notamData, loading 
                     loading={loading}
                     activeFilter={statusFilter}
                     onFirClick={handleFirClick}
-                    // onAirportClick={setSelectedAirport}
+                    onAirportClick={setSelectedAirport}
                 />
             </div>
 

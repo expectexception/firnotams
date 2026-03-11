@@ -50,7 +50,7 @@ function parseInteger(value: string | undefined, fallback: number): number {
 
 function parseTargets(raw: string | undefined): string[] {
     if (!raw || !raw.trim()) {
-        return getAllAirportIcaos();
+        return [...getAllAirportIcaos(), ...getAllFirIcaos()];
     }
     const set = new Set(
         raw
