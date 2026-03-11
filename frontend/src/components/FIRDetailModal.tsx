@@ -9,6 +9,7 @@ interface FIRDetailModalProps {
     notamData: LocationNotams | null;
     loading: boolean;
     onClose: () => void;
+    initialNotamId?: string | null;
 }
 
 // ── Status styling ───────────────────────────────────────────
@@ -177,11 +178,12 @@ const NotamDetailCard: React.FC<{ notam: NotamItem; rank: number; isUpcoming?: b
 
 // ── Main Modal ───────────────────────────────────────────────
 
-const FIRDetailModal: React.FC<FIRDetailModalProps> = ({ fir, firStatus, notamData, loading, onClose }) => {
+const FIRDetailModal: React.FC<FIRDetailModalProps> = ({ fir, firStatus, notamData, loading, onClose, initialNotamId }) => {
     const status: NotamStatus = loading && !firStatus ? 'unknown' : (firStatus?.status ?? 'unknown');
     const hasEscat = firStatus?.hasEscat ?? notamData?.hasEscat ?? false;
     const [startDateFilter, setStartDateFilter] = useState('');
     const [upcomingExpanded, setUpcomingExpanded] = useState(true);
+    const [showOnlyInitial, setShowOnlyInitial] = useState(!!initialNotamId);
     const upcomingRef = useRef<HTMLDivElement>(null);
 
     const scrollToUpcoming = () => {
@@ -217,8 +219,15 @@ const FIRDetailModal: React.FC<FIRDetailModalProps> = ({ fir, firStatus, notamDa
             const tb = b.analysis?.startsAtUtc ? new Date(b.analysis.startsAtUtc).getTime() : 0;
             return ta - tb;
         });
+
+        if (showOnlyInitial && initialNotamId) {
+            const filteredActive = active.filter(n => n.id === initialNotamId);
+            const filteredUpcoming = upcoming.filter(n => n.id === initialNotamId);
+            return { activeNotams: filteredActive, upcomingNotams: filteredUpcoming };
+        }
+
         return { activeNotams: active, upcomingNotams: upcoming };
-    }, [allNotams]);
+    }, [allNotams, showOnlyInitial, initialNotamId]);
 
     const filteredActive = useMemo(() => {
         if (!startDateFilter) return activeNotams;
@@ -311,10 +320,18 @@ const FIRDetailModal: React.FC<FIRDetailModalProps> = ({ fir, firStatus, notamDa
                                     Clear
                                 </button>
                             )}
-                            {allNotams.length > 0 && (
-                                <span className="text-[9px] text-slate-600 font-mono">{filteredActive.length}/{activeNotams.length}</span>
-                            )}
-                        </div>
+                                {allNotams.length > 0 && !showOnlyInitial && (
+                                    <span className="text-[9px] text-slate-600 font-mono">{filteredActive.length}/{activeNotams.length}</span>
+                                )}
+                                {showOnlyInitial && (
+                                    <button
+                                        onClick={() => setShowOnlyInitial(false)}
+                                        className="text-[9px] text-blue-400 hover:text-blue-300 font-bold uppercase tracking-widest px-2 py-1 bg-blue-500/10 border border-blue-500/30 rounded"
+                                    >
+                                        Show All NOTAMs
+                                    </button>
+                                )}
+                            </div>
                     </div>
                 </div>
 

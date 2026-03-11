@@ -19,7 +19,7 @@ function App() {
         error,
         lastRefresh,
         refreshing,
-        loadAllData,
+        // loadAllData,
         setError
     } = useNotamData();
 
@@ -163,15 +163,15 @@ function App() {
                         </div>
 
                         {/* Manual refresh button */}
-                        <button
-                            onClick={() => loadAllData(true)}
+                        {/* <button
+                            // onClick={() => loadAllData(true)}
                             disabled={refreshing || loading}
                             className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-blue-900/40 flex-shrink-0"
                             title="Refresh data"
                         >
                             <RefreshCw size={12} className={refreshing ? 'spinner' : ''} />
                             <span className="hidden sm:inline">{refreshing ? 'Refreshing…' : 'Refresh'}</span>
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </header>

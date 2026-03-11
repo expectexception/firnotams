@@ -1,0 +1,331 @@
+{
+  "firs": [
+    {
+      "icao": "LCCC",
+      "name": "Nicosia FIR",
+      "geojsonCode": "LCCC",
+      "airports": [
+        { "icao": "LCLK", "iata": "LCA", "name": "Larnaca International Airport", "city": "Larnaca", "country": "CY", "lat": 34.8751, "lon": 33.6249 },
+        { "icao": "LCPH", "iata": "PFO", "name": "Paphos International Airport", "city": "Paphos", "country": "CY", "lat": 34.7180, "lon": 32.4857 },
+        { "icao": "LCGK", "iata": "", "name": "Gecitkale Air Base", "city": "Gecitkale", "country": "CY", "lat": 35.2347, "lon": 33.7231 },
+        { "icao": "LCRA", "iata": "", "name": "Akrotiri RAF Base", "city": "Akrotiri", "country": "CY", "lat": 34.5904, "lon": 32.9879 },
+        { "icao": "LCEN", "iata": "", "name": "Ercan International Airport", "city": "Nicosia", "country": "CY", "lat": 35.1547, "lon": 33.4961 }
+      ]
+    },
+    {
+      "icao": "LLLL",
+      "name": "Tel Aviv FIR",
+      "geojsonCode": "LLTA",
+      "airports": [
+        { "icao": "LLBG", "iata": "TLV", "name": "Ben Gurion International Airport", "city": "Tel Aviv", "country": "IL", "lat": 32.0114, "lon": 34.8867 },
+        { "icao": "LLIB", "iata": "ETH", "name": "Eilat Airport", "city": "Eilat", "country": "IL", "lat": 29.5613, "lon": 34.9600 },
+        { "icao": "LLOV", "iata": "VDA", "name": "Ovda Airport", "city": "Ovda", "country": "IL", "lat": 29.9403, "lon": 34.9358 },
+        { "icao": "LLHZ", "iata": "", "name": "Herzliya Airport", "city": "Herzliya", "country": "IL", "lat": 32.1806, "lon": 34.8344 },
+        { "icao": "LLSD", "iata": "SDV", "name": "Sde Dov Airport", "city": "Tel Aviv", "country": "IL", "lat": 32.1147, "lon": 34.7822 },
+        { "icao": "LLEK", "iata": "", "name": "Ein Shemer Airfield", "city": "Ein Shemer", "country": "IL", "lat": 32.4406, "lon": 35.0078 },
+        { "icao": "LLKS", "iata": "", "name": "Kiryat Shmona Airport", "city": "Kiryat Shmona", "country": "IL", "lat": 33.2167, "lon": 35.5986 },
+        { "icao": "LLJR", "iata": "", "name": "Jerusalem Airport", "city": "Jerusalem", "country": "IL", "lat": 31.8647, "lon": 35.2192 },
+        { "icao": "LLHA", "iata": "HFA", "name": "Haifa Airport", "city": "Haifa", "country": "IL", "lat": 32.8094, "lon": 35.0431 },
+        { "icao": "LLMZ", "iata": "MTZ", "name": "Bar Yehuda Airfield", "city": "Masada", "country": "IL", "lat": 31.3283, "lon": 35.3886 },
+        { "icao": "LLES", "iata": "", "name": "Ein Shemer Airport", "city": "Ein Shemer", "country": "IL", "lat": 32.4406, "lon": 35.0078 },
+        { "icao": "LLRM", "iata": "MIP", "name": "Ramon Air Base", "city": "Mitzpe Ramon", "country": "IL", "lat": 30.7761, "lon": 34.6667 },
+        { "icao": "LLER", "iata": "ETM", "name": "Ramon International Airport", "city": "Eilat", "country": "IL", "lat": 29.7236, "lon": 35.0114 }
+      ]
+    },
+    {
+      "icao": "OAKX",
+      "name": "Kabul FIR",
+      "geojsonCode": "OAKX",
+      "airports": [
+        { "icao": "OAKB", "iata": "KBL", "name": "Hamid Karzai International Airport", "city": "Kabul", "country": "AF", "lat": 34.5659, "lon": 69.2123 },
+        { "icao": "OAKS", "iata": "KDH", "name": "Ahmad Shah Baba International Airport", "city": "Kandahar", "country": "AF", "lat": 31.5058, "lon": 65.8478 },
+        { "icao": "OAHN", "iata": "HEA", "name": "Herat International Airport", "city": "Herat", "country": "AF", "lat": 34.2100, "lon": 62.2283 },
+        { "icao": "OAMN", "iata": "MZR", "name": "Mazar-i-Sharif International Airport", "city": "Mazar-i-Sharif", "country": "AF", "lat": 36.7069, "lon": 67.2097 },
+        { "icao": "OAJL", "iata": "JAA", "name": "Jalalabad Airport", "city": "Jalalabad", "country": "AF", "lat": 34.3998, "lon": 70.4986 },
+        { "icao": "OACD", "iata": "", "name": "Konduz Airport", "city": "Kunduz", "country": "AF", "lat": 36.6651, "lon": 68.9108 },
+        { "icao": "OABH", "iata": "BST", "name": "Bost Airport", "city": "Lashkar Gah", "country": "AF", "lat": 31.5597, "lon": 64.3650 },
+        { "icao": "OAFZ", "iata": "FAH", "name": "Farah Airport", "city": "Farah", "country": "AF", "lat": 32.3672, "lon": 62.1822 },
+        { "icao": "OAGO", "iata": "GRG", "name": "Gardez Airport", "city": "Gardez", "country": "AF", "lat": 33.6014, "lon": 69.2314 },
+        { "icao": "OAGN", "iata": "GZI", "name": "Ghazni Airport", "city": "Ghazni", "country": "AF", "lat": 33.5312, "lon": 68.4126 },
+        { "icao": "OAIX", "iata": "", "name": "Bagram Air Base", "city": "Bagram", "country": "AF", "lat": 34.9461, "lon": 69.2650 },
+        { "icao": "OABT", "iata": "UND", "name": "Kunduz Airport", "city": "Kunduz", "country": "AF", "lat": 36.6651, "lon": 68.9108 },
+        { "icao": "OAFG", "iata": "", "name": "Faizabad Airport", "city": "Faizabad", "country": "AF", "lat": 37.1211, "lon": 70.5181 },
+        { "icao": "OASD", "iata": "SGA", "name": "Sheghnan Airport", "city": "Sheghnan", "country": "AF", "lat": 37.5000, "lon": 71.4900 },
+        { "icao": "OATL", "iata": "TII", "name": "Tarinkot Airport", "city": "Tarinkot", "country": "AF", "lat": 32.6042, "lon": 65.8658 },
+        { "icao": "OAZI", "iata": "ZAJ", "name": "Zaranj Airport", "city": "Zaranj", "country": "AF", "lat": 30.9722, "lon": 61.8686 }
+      ]
+    },
+    {
+      "icao": "OBBB",
+      "name": "Bahrain FIR",
+      "geojsonCode": "OBBB",
+      "airports": [
+        { "icao": "OBBI", "iata": "BAH", "name": "Bahrain International Airport", "city": "Manama", "country": "BH", "lat": 26.2708, "lon": 50.6336 },
+        { "icao": "OKBK", "iata": "KWI", "name": "Kuwait International Airport", "city": "Kuwait City", "country": "KW", "lat": 29.2267, "lon": 47.9689 },
+        { "icao": "OEDF", "iata": "DMM", "name": "King Fahd International Airport", "city": "Dammam", "country": "SA", "lat": 26.4712, "lon": 49.7979 },
+        { "icao": "OEAH", "iata": "HOF", "name": "Al-Ahsa International Airport", "city": "Al-Ahsa", "country": "SA", "lat": 25.2853, "lon": 49.4852 },
+        { "icao": "OEJN", "iata": "QJB", "name": "Jubail Airport", "city": "Jubail", "country": "SA", "lat": 27.0389, "lon": 49.4053 },
+        { "icao": "OEQN", "iata": "AQI", "name": "Qaisumah Domestic Airport", "city": "Hafr Al-Batin", "country": "SA", "lat": 28.3353, "lon": 46.1250 }
+      ]
+    },
+    {
+      "icao": "OEJD",
+      "name": "Jeddah FIR",
+      "geojsonCode": "OEJD",
+      "airports": [
+        { "icao": "OEJN", "iata": "JED", "name": "King Abdulaziz International Airport", "city": "Jeddah", "country": "SA", "lat": 21.6796, "lon": 39.1565 },
+        { "icao": "OERK", "iata": "RUH", "name": "King Khalid International Airport", "city": "Riyadh", "country": "SA", "lat": 24.9578, "lon": 46.6989 },
+        { "icao": "OEMA", "iata": "MED", "name": "Prince Mohammad Bin Abdulaziz Airport", "city": "Medina", "country": "SA", "lat": 24.5534, "lon": 39.7051 },
+        { "icao": "OETF", "iata": "TIF", "name": "Ta'if Regional Airport", "city": "Ta'if", "country": "SA", "lat": 21.4839, "lon": 40.5444 },
+        { "icao": "OEAB", "iata": "ABT", "name": "Al Baha Domestic Airport", "city": "Al Baha", "country": "SA", "lat": 20.2961, "lon": 41.6343 },
+        { "icao": "OEGS", "iata": "ELQ", "name": "Gassim Regional Airport", "city": "Buraydah", "country": "SA", "lat": 26.3028, "lon": 43.7744 },
+        { "icao": "OEHL", "iata": "HAS", "name": "Hail Regional Airport", "city": "Hail", "country": "SA", "lat": 27.4379, "lon": 41.6863 },
+        { "icao": "OETB", "iata": "TUU", "name": "Tabuk Regional Airport", "city": "Tabuk", "country": "SA", "lat": 28.3654, "lon": 36.6189 },
+        { "icao": "OEAO", "iata": "AJF", "name": "Al-Jouf Domestic Airport", "city": "Al-Jawf", "country": "SA", "lat": 29.7851, "lon": 40.1000 },
+        { "icao": "OEWD", "iata": "WAE", "name": "Wadi Al Dawasir Airport", "city": "Wadi Al Dawasir", "country": "SA", "lat": 20.5043, "lon": 45.1996 },
+        { "icao": "OEBA", "iata": "", "name": "Al Baha Airport", "city": "Al Baha", "country": "SA", "lat": 20.2961, "lon": 41.6343 },
+        { "icao": "OEBQ", "iata": "BHH", "name": "Bisha Domestic Airport", "city": "Bisha", "country": "SA", "lat": 19.9844, "lon": 42.6208 },
+        { "icao": "OESK", "iata": "AHB", "name": "Abha Regional Airport", "city": "Abha", "country": "SA", "lat": 18.2403, "lon": 42.6567 },
+        { "icao": "OENR", "iata": "RAE", "name": "Arar Domestic Airport", "city": "Arar", "country": "SA", "lat": 30.9069, "lon": 41.1382 },
+        { "icao": "OEGN", "iata": "GIZ", "name": "Jizan Regional Airport", "city": "Jizan", "country": "SA", "lat": 16.9011, "lon": 42.5858 },
+        { "icao": "OEYN", "iata": "YNB", "name": "Prince Abdul Mohsin Bin Abdulaziz Airport", "city": "Yanbu", "country": "SA", "lat": 24.1442, "lon": 38.0634 },
+        { "icao": "OENN", "iata": "EAM", "name": "Nejran Domestic Airport", "city": "Nejran", "country": "SA", "lat": 17.6114, "lon": 44.4192 },
+        { "icao": "OEKK", "iata": "KMX", "name": "King Khaled Air Base", "city": "Khamis Mushait", "country": "SA", "lat": 18.2972, "lon": 42.8036 }
+      ]
+    },
+    {
+      "icao": "OIIX",
+      "name": "Tehran FIR",
+      "geojsonCode": "OIIX",
+      "airports": [
+        { "icao": "OIIE", "iata": "IKA", "name": "Imam Khomeini International Airport", "city": "Tehran", "country": "IR", "lat": 35.4161, "lon": 51.1522 },
+        { "icao": "OIII", "iata": "THR", "name": "Mehrabad International Airport", "city": "Tehran", "country": "IR", "lat": 35.6892, "lon": 51.3144 },
+        { "icao": "OIFM", "iata": "IFN", "name": "Isfahan International Airport", "city": "Isfahan", "country": "IR", "lat": 32.7508, "lon": 51.8611 },
+        { "icao": "OISH", "iata": "SYZ", "name": "Shiraz International Airport", "city": "Shiraz", "country": "IR", "lat": 29.5392, "lon": 52.5898 },
+        { "icao": "OITM", "iata": "TBZ", "name": "Tabriz International Airport", "city": "Tabriz", "country": "IR", "lat": 38.1339, "lon": 46.2350 },
+        { "icao": "OIAW", "iata": "AWZ", "name": "Ahvaz International Airport", "city": "Ahvaz", "country": "IR", "lat": 31.3372, "lon": 48.7620 },
+        { "icao": "OIMM", "iata": "MHD", "name": "Mashhad International Airport", "city": "Mashhad", "country": "IR", "lat": 36.2352, "lon": 59.6400 },
+        { "icao": "OIKB", "iata": "BND", "name": "Bandar Abbas International Airport", "city": "Bandar Abbas", "country": "IR", "lat": 27.2183, "lon": 56.3778 },
+        { "icao": "OICC", "iata": "KSH", "name": "Shahid Ashrafi Esfahani Airport", "city": "Kermanshah", "country": "IR", "lat": 34.3459, "lon": 47.1581 },
+        { "icao": "OIHR", "iata": "RAS", "name": "Sardar Jangal Airport", "city": "Rasht", "country": "IR", "lat": 37.3233, "lon": 49.6178 },
+        { "icao": "OIZH", "iata": "ZAH", "name": "Zahedan International Airport", "city": "Zahedan", "country": "IR", "lat": 29.4757, "lon": 60.9062 },
+        { "icao": "OIKK", "iata": "KER", "name": "Kerman Airport", "city": "Kerman", "country": "IR", "lat": 30.2744, "lon": 56.9511 },
+        { "icao": "OIAG", "iata": "AEU", "name": "Abadan Airport", "city": "Abadan", "country": "IR", "lat": 30.3711, "lon": 48.2283 },
+        { "icao": "OIBK", "iata": "KHD", "name": "Khorramabad Airport", "city": "Khorramabad", "country": "IR", "lat": 33.4353, "lon": 48.2822 },
+        { "icao": "OIBS", "iata": "SDG", "name": "Sanandaj Airport", "city": "Sanandaj", "country": "IR", "lat": 35.2459, "lon": 47.0092 },
+        { "icao": "OIIT", "iata": "ADU", "name": "Ardabil Airport", "city": "Ardabil", "country": "IR", "lat": 38.3257, "lon": 48.4244 },
+        { "icao": "OINE", "iata": "NSH", "name": "Noshahr Airport", "city": "Noshahr", "country": "IR", "lat": 36.6633, "lon": 51.4647 },
+        { "icao": "OISY", "iata": "YEH", "name": "Yazd Airport", "city": "Yazd", "country": "IR", "lat": 31.9050, "lon": 54.2764 },
+        { "icao": "OIMB", "iata": "BJB", "name": "Bojnord Airport", "city": "Bojnord", "country": "IR", "lat": 37.4930, "lon": 57.3082 },
+        { "icao": "OIMN", "iata": "NIZ", "name": "Sabzevar Airport", "city": "Sabzevar", "country": "IR", "lat": 36.1681, "lon": 57.5952 },
+        { "icao": "OICS", "iata": "SRY", "name": "Dasht-e Naz Airport", "city": "Sari", "country": "IR", "lat": 36.6353, "lon": 53.1936 },
+        { "icao": "OIGG", "iata": "GBT", "name": "Gorgan Airport", "city": "Gorgan", "country": "IR", "lat": 36.9094, "lon": 54.4013 },
+        { "icao": "OIAI", "iata": "IIL", "name": "Ilam Airport", "city": "Ilam", "country": "IR", "lat": 33.5866, "lon": 46.4048 },
+        { "icao": "OIFS", "iata": "SYJ", "name": "Sirjan Airport", "city": "Sirjan", "country": "IR", "lat": 29.5508, "lon": 55.6728 },
+        { "icao": "OIKJ", "iata": "JYR", "name": "Jiroft Airport", "city": "Jiroft", "country": "IR", "lat": 28.7269, "lon": 57.6703 }
+      ]
+    },
+    {
+      "icao": "OJAC",
+      "name": "Amman FIR",
+      "geojsonCode": "OJAC",
+      "airports": [
+        { "icao": "OJAI", "iata": "AMM", "name": "Queen Alia International Airport", "city": "Amman", "country": "JO", "lat": 31.7226, "lon": 35.9932 },
+        { "icao": "OJAM", "iata": "ADJ", "name": "Amman Civil Airport (Marka)", "city": "Amman", "country": "JO", "lat": 31.9727, "lon": 35.9916 },
+        { "icao": "OJAQ", "iata": "AQJ", "name": "King Hussein International Airport", "city": "Aqaba", "country": "JO", "lat": 29.6117, "lon": 35.0181 },
+        { "icao": "OJNA", "iata": "", "name": "Mafaq Airport", "city": "Mafraq", "country": "JO", "lat": 32.3564, "lon": 36.2592 }
+      ]
+    },
+    {
+      "icao": "OPKR",
+      "name": "Karachi FIR",
+      "geojsonCode": "OPKR",
+      "airports": [
+        { "icao": "OPKC", "iata": "KHI", "name": "Jinnah International Airport", "city": "Karachi", "country": "PK", "lat": 24.9065, "lon": 67.1608 },
+        { "icao": "OPQT", "iata": "UET", "name": "Quetta International Airport", "city": "Quetta", "country": "PK", "lat": 30.2514, "lon": 66.9378 },
+        { "icao": "OPSP", "iata": "SBQ", "name": "Sibi Airport", "city": "Sibi", "country": "PK", "lat": 29.5711, "lon": 67.8486 },
+        { "icao": "OPSN", "iata": "SKZ", "name": "Sukkur Airport", "city": "Sukkur", "country": "PK", "lat": 27.7220, "lon": 68.7917 },
+        { "icao": "OPNH", "iata": "WNS", "name": "Nawabshah Airport", "city": "Nawabshah", "country": "PK", "lat": 26.2194, "lon": 68.3900 },
+        { "icao": "OPJA", "iata": "JAG", "name": "Jacobabad Airport", "city": "Jacobabad", "country": "PK", "lat": 28.2842, "lon": 68.4497 },
+        { "icao": "OPBW", "iata": "BHV", "name": "Bahawalpur Airport", "city": "Bahawalpur", "country": "PK", "lat": 29.3481, "lon": 71.7181 },
+        { "icao": "OPMT", "iata": "MFG", "name": "Muzaffarabad Airport", "city": "Muzaffarabad", "country": "PK", "lat": 34.3390, "lon": 73.5086 },
+        { "icao": "OPTU", "iata": "TUK", "name": "Turbat International Airport", "city": "Turbat", "country": "PK", "lat": 25.9864, "lon": 63.0302 },
+        { "icao": "OPGD", "iata": "GWD", "name": "Gwadar International Airport", "city": "Gwadar", "country": "PK", "lat": 25.2333, "lon": 62.3295 },
+        { "icao": "OPZB", "iata": "ZHB", "name": "Zhob Airport", "city": "Zhob", "country": "PK", "lat": 31.3583, "lon": 69.4636 },
+        { "icao": "OPSK", "iata": "SKZ", "name": "Sukkur Airport", "city": "Sukkur", "country": "PK", "lat": 27.7220, "lon": 68.7917 },
+        { "icao": "OPKD", "iata": "HDD", "name": "Hyderabad Airport", "city": "Hyderabad", "country": "PK", "lat": 25.3181, "lon": 68.3661 },
+        { "icao": "OPOR", "iata": "", "name": "Ormara Airport", "city": "Ormara", "country": "PK", "lat": 25.2747, "lon": 64.5861 }
+      ]
+    },
+    {
+      "icao": "OPLR",
+      "name": "Lahore FIR",
+      "geojsonCode": "OPLR",
+      "airports": [
+        { "icao": "OPLA", "iata": "LHE", "name": "Allama Iqbal International Airport", "city": "Lahore", "country": "PK", "lat": 31.5216, "lon": 74.4036 },
+        { "icao": "OPIS", "iata": "ISB", "name": "New Islamabad International Airport", "city": "Islamabad", "country": "PK", "lat": 33.5494, "lon": 72.8259 },
+        { "icao": "OPPS", "iata": "PEW", "name": "Bacha Khan International Airport", "city": "Peshawar", "country": "PK", "lat": 33.9939, "lon": 71.5146 },
+        { "icao": "OPFA", "iata": "FSB", "name": "Faisalabad International Airport", "city": "Faisalabad", "country": "PK", "lat": 31.3650, "lon": 72.9947 },
+        { "icao": "OPMT", "iata": "MUX", "name": "Multan International Airport", "city": "Multan", "country": "PK", "lat": 30.2031, "lon": 71.4192 },
+        { "icao": "OPIS", "iata": "ISB", "name": "Benazir Bhutto International Airport", "city": "Rawalpindi", "country": "PK", "lat": 33.6167, "lon": 73.0997 },
+        { "icao": "OPSR", "iata": "SKT", "name": "Sialkot International Airport", "city": "Sialkot", "country": "PK", "lat": 32.5356, "lon": 74.3639 },
+        { "icao": "OPGT", "iata": "GIL", "name": "Gilgit Airport", "city": "Gilgit", "country": "PK", "lat": 35.9188, "lon": 74.3336 },
+        { "icao": "OPSK", "iata": "SKZ", "name": "Skardu Airport", "city": "Skardu", "country": "PK", "lat": 35.3358, "lon": 75.5361 },
+        { "icao": "OPCH", "iata": "CHB", "name": "Chilas Airport", "city": "Chilas", "country": "PK", "lat": 35.4267, "lon": 74.0786 },
+        { "icao": "OPDI", "iata": "DSK", "name": "Dera Ismail Khan Airport", "city": "Dera Ismail Khan", "country": "PK", "lat": 31.9094, "lon": 70.8967 },
+        { "icao": "OPBK", "iata": "", "name": "Bannu Airport", "city": "Bannu", "country": "PK", "lat": 32.9729, "lon": 70.5278 }
+      ]
+    },
+    {
+      "icao": "OKAC",
+      "name": "Kuwait FIR",
+      "geojsonCode": "OKAC",
+      "airports": [
+        { "icao": "OKBK", "iata": "KWI", "name": "Kuwait International Airport", "city": "Kuwait City", "country": "KW", "lat": 29.2267, "lon": 47.9689 }
+      ]
+    },
+    {
+      "icao": "OLBB",
+      "name": "Beirut FIR",
+      "geojsonCode": "OLBB",
+      "airports": [
+        { "icao": "OLBA", "iata": "BEY", "name": "Beirut Rafic Hariri International Airport", "city": "Beirut", "country": "LB", "lat": 33.8209, "lon": 35.4886 },
+        { "icao": "OLKA", "iata": "", "name": "Kleyate Airport", "city": "Tripoli", "country": "LB", "lat": 34.5889, "lon": 36.0119 }
+      ]
+    },
+    {
+      "icao": "OMAE",
+      "name": "Emirates FIR",
+      "geojsonCode": "OMAE",
+      "airports": [
+        { "icao": "OMDB", "iata": "DXB", "name": "Dubai International Airport", "city": "Dubai", "country": "AE", "lat": 25.2528, "lon": 55.3644 },
+        { "icao": "OMAD", "iata": "AUH", "name": "Abu Dhabi International Airport", "city": "Abu Dhabi", "country": "AE", "lat": 24.4330, "lon": 54.6511 },
+        { "icao": "OMAA", "iata": "AUH", "name": "Abu Dhabi International Airport", "city": "Abu Dhabi", "country": "AE", "lat": 24.4330, "lon": 54.6511 },
+        { "icao": "OMSJ", "iata": "SHJ", "name": "Sharjah International Airport", "city": "Sharjah", "country": "AE", "lat": 25.3286, "lon": 55.5172 },
+        { "icao": "OMFO", "iata": "FJR", "name": "Fujairah International Airport", "city": "Fujairah", "country": "AE", "lat": 25.1122, "lon": 56.3240 },
+        { "icao": "OMRK", "iata": "RKT", "name": "Ras Al Khaimah International Airport", "city": "Ras Al Khaimah", "country": "AE", "lat": 25.6135, "lon": 55.9388 },
+        { "icao": "OMAM", "iata": "AZI", "name": "Al Bateen Executive Airport", "city": "Abu Dhabi", "country": "AE", "lat": 24.4283, "lon": 54.4581 },
+        { "icao": "OMDW", "iata": "DWC", "name": "Al Maktoum International Airport", "city": "Dubai", "country": "AE", "lat": 24.8963, "lon": 55.1614 },
+        { "icao": "OMFJ", "iata": "", "name": "Fujairah Air Base", "city": "Fujairah", "country": "AE", "lat": 25.0950, "lon": 56.3533 },
+        { "icao": "OMAQ", "iata": "AAN", "name": "Al Ain International Airport", "city": "Al Ain", "country": "AE", "lat": 24.2617, "lon": 55.6092 }
+      ]
+    },
+    {
+      "icao": "OOMM",
+      "name": "Muscat FIR",
+      "geojsonCode": "OOMM",
+      "airports": [
+        { "icao": "OOMS", "iata": "MCT", "name": "Muscat International Airport", "city": "Muscat", "country": "OM", "lat": 23.5933, "lon": 58.2844 },
+        { "icao": "OOSA", "iata": "SLL", "name": "Salalah Airport", "city": "Salalah", "country": "OM", "lat": 17.0381, "lon": 54.0913 },
+        { "icao": "OOSH", "iata": "SHJ", "name": "Sohar Airport", "city": "Sohar", "country": "OM", "lat": 24.3861, "lon": 56.6253 },
+        { "icao": "OOSR", "iata": "", "name": "Sur Airport", "city": "Sur", "country": "OM", "lat": 22.5336, "lon": 59.4811 },
+        { "icao": "OOLK", "iata": "LKH", "name": "Lekhwair Airport", "city": "Lekhwair", "country": "OM", "lat": 23.1833, "lon": 56.3167 },
+        { "icao": "OOMA", "iata": "AOM", "name": "Adam Airport", "city": "Adam", "country": "OM", "lat": 22.5264, "lon": 57.7836 },
+        { "icao": "OOMQ", "iata": "MNH", "name": "Masirah Air Base", "city": "Masirah", "country": "OM", "lat": 20.6753, "lon": 58.8903 },
+        { "icao": "OOHQ", "iata": "HSN", "name": "Hisn Al Ghurab Airport", "city": "Raysut", "country": "OM", "lat": 16.6958, "lon": 53.6378 },
+        { "icao": "OOKB", "iata": "KHS", "name": "Khasab Airport", "city": "Khasab", "country": "OM", "lat": 26.1710, "lon": 56.2406 },
+        { "icao": "OOBR", "iata": "BYB", "name": "Dibaa Airport", "city": "Dibba Al-Baya", "country": "OM", "lat": 25.6186, "lon": 56.3892 },
+        { "icao": "OOFD", "iata": "FAU", "name": "Fahud Airport", "city": "Fahud", "country": "OM", "lat": 22.3556, "lon": 56.4839 }
+      ]
+    },
+    {
+      "icao": "ORBB",
+      "name": "Baghdad FIR",
+      "geojsonCode": "ORBB",
+      "airports": [
+        { "icao": "ORBI", "iata": "BGW", "name": "Baghdad International Airport", "city": "Baghdad", "country": "IQ", "lat": 33.2625, "lon": 44.2346 },
+        { "icao": "ORMM", "iata": "BSR", "name": "Basra International Airport", "city": "Basra", "country": "IQ", "lat": 30.5492, "lon": 47.6621 },
+        { "icao": "ORBM", "iata": "OSM", "name": "Mosul International Airport", "city": "Mosul", "country": "IQ", "lat": 36.3058, "lon": 43.1474 },
+        { "icao": "ORER", "iata": "EBL", "name": "Erbil International Airport", "city": "Erbil", "country": "IQ", "lat": 36.2376, "lon": 43.9632 },
+        { "icao": "ORSU", "iata": "ISU", "name": "Sulaimaniyah International Airport", "city": "Sulaymaniyah", "country": "IQ", "lat": 35.5608, "lon": 45.3147 },
+        { "icao": "ORKK", "iata": "KIK", "name": "Kirkuk Airport", "city": "Kirkuk", "country": "IQ", "lat": 35.4695, "lon": 44.3489 },
+        { "icao": "ORAI", "iata": "NJF", "name": "Al Najaf International Airport", "city": "Najaf", "country": "IQ", "lat": 31.9891, "lon": 44.4042 },
+        { "icao": "ORAT", "iata": "", "name": "Tikrit (Saddam) Airport", "city": "Tikrit", "country": "IQ", "lat": 34.5458, "lon": 43.5972 },
+        { "icao": "ORNA", "iata": "XNH", "name": "Ali Air Base", "city": "Nasiriyah", "country": "IQ", "lat": 30.9358, "lon": 46.0900 },
+        { "icao": "ORQW", "iata": "RQW", "name": "Qayyarah Airfield West", "city": "Qayyarah", "country": "IQ", "lat": 35.7672, "lon": 43.1253 },
+        { "icao": "ORAБ", "iata": "BMN", "name": "Bamarni Airport", "city": "Bamarni", "country": "IQ", "lat": 37.0994, "lon": 43.2664 },
+        { "icao": "ORHB", "iata": "HBD", "name": "Habbaniyah Air Base", "city": "Habbaniyah", "country": "IQ", "lat": 33.3592, "lon": 43.6064 }
+      ]
+    },
+    {
+      "icao": "OSTT",
+      "name": "Damascus FIR",
+      "geojsonCode": "OSTT",
+      "airports": [
+        { "icao": "OSDI", "iata": "DAM", "name": "Damascus International Airport", "city": "Damascus", "country": "SY", "lat": 33.4115, "lon": 36.5156 },
+        { "icao": "OSAP", "iata": "ALP", "name": "Aleppo International Airport", "city": "Aleppo", "country": "SY", "lat": 36.1807, "lon": 37.2244 },
+        { "icao": "OSLK", "iata": "LTK", "name": "Bassel Al-Assad International Airport", "city": "Latakia", "country": "SY", "lat": 35.4011, "lon": 35.9487 },
+        { "icao": "OSDZ", "iata": "DEZ", "name": "Deir ez-Zor Airport", "city": "Deir ez-Zor", "country": "SY", "lat": 35.2854, "lon": 40.1760 },
+        { "icao": "OSKL", "iata": "KAC", "name": "Kamishly Airport", "city": "Qamishli", "country": "SY", "lat": 37.0206, "lon": 41.1914 },
+        { "icao": "OSPR", "iata": "PMS", "name": "Palmyra Airport", "city": "Palmyra", "country": "SY", "lat": 34.5574, "lon": 38.3169 }
+      ]
+    },
+    {
+      "icao": "OTDF",
+      "name": "Doha FIR",
+      "geojsonCode": "OTDF",
+      "airports": [
+        { "icao": "OTBH", "iata": "XJD", "name": "Al Udeid Air Base", "city": "Doha", "country": "QA", "lat": 25.1173, "lon": 51.3150 },
+        { "icao": "OTHH", "iata": "DOH", "name": "Hamad International Airport", "city": "Doha", "country": "QA", "lat": 25.2731, "lon": 51.6081 },
+        { "icao": "OTBD", "iata": "DIA", "name": "Doha International Airport (Old)", "city": "Doha", "country": "QA", "lat": 25.2611, "lon": 51.5653 }
+      ]
+    },
+    {
+      "icao": "OYSC",
+      "name": "Sana'a FIR",
+      "geojsonCode": "OYSC",
+      "airports": [
+        { "icao": "OYSN", "iata": "SAH", "name": "Sana'a International Airport", "city": "Sana'a", "country": "YE", "lat": 15.4763, "lon": 44.2197 },
+        { "icao": "OYAA", "iata": "ADE", "name": "Aden International Airport", "city": "Aden", "country": "YE", "lat": 12.8295, "lon": 45.0288 },
+        { "icao": "OYHD", "iata": "HOD", "name": "Hodeidah International Airport", "city": "Hodeidah", "country": "YE", "lat": 14.7530, "lon": 42.9763 },
+        { "icao": "OYTZ", "iata": "TAI", "name": "Ta'izz International Airport", "city": "Taizz", "country": "YE", "lat": 13.6858, "lon": 44.1394 },
+        { "icao": "OYMK", "iata": "MKX", "name": "Mukalla International Airport", "city": "Al Mukalla", "country": "YE", "lat": 14.6597, "lon": 49.3753 },
+        { "icao": "OYAM", "iata": "AXK", "name": "Ataq Airport", "city": "Ataq", "country": "YE", "lat": 14.5513, "lon": 46.8262 },
+        { "icao": "OYRN", "iata": "RIY", "name": "Mukalla International Airport", "city": "Riyan", "country": "YE", "lat": 14.6625, "lon": 49.3750 },
+        { "icao": "OYSO", "iata": "SCT", "name": "Socotra International Airport", "city": "Hadibo", "country": "YE", "lat": 12.6306, "lon": 53.9058 },
+        { "icao": "OYSQ", "iata": "SYE", "name": "Sadah Airport", "city": "Sa'dah", "country": "YE", "lat": 16.9678, "lon": 43.7456 },
+        { "icao": "OYMB", "iata": "GXF", "name": "Seiyun Airport", "city": "Seiyun", "country": "YE", "lat": 15.9661, "lon": 48.7883 },
+        { "icao": "OYBI", "iata": "BUK", "name": "Albuq Airport", "city": "Al Bayda", "country": "YE", "lat": 14.0000, "lon": 45.5500 },
+        { "icao": "OYQN", "iata": "", "name": "Qana Airport", "city": "Qana", "country": "YE", "lat": 14.7836, "lon": 47.2722 }
+      ]
+    },
+    {
+      "icao": "HECC",
+      "name": "Cairo FIR",
+      "geojsonCode": "HECC",
+      "airports": [
+        { "icao": "HECA", "iata": "CAI", "name": "Cairo International Airport", "city": "Cairo", "country": "EG", "lat": 30.1219, "lon": 31.4056 },
+        { "icao": "HEAT", "iata": "ATZ", "name": "Assiut International Airport", "city": "Asyut", "country": "EG", "lat": 27.0464, "lon": 31.0119 },
+        { "icao": "HELX", "iata": "LXR", "name": "Luxor International Airport", "city": "Luxor", "country": "EG", "lat": 25.6710, "lon": 32.7066 },
+        { "icao": "HEAR", "iata": "HRG", "name": "Hurghada International Airport", "city": "Hurghada", "country": "EG", "lat": 27.1803, "lon": 33.7994 },
+        { "icao": "HESH", "iata": "SSH", "name": "Sharm el-Sheikh International Airport", "city": "Sharm el-Sheikh", "country": "EG", "lat": 27.9773, "lon": 34.3950 },
+        { "icao": "HEOW", "iata": "GSQ", "name": "Shark El Oweinat International Airport", "city": "Shark El Oweinat", "country": "EG", "lat": 22.5857, "lon": 28.7158 },
+        { "icao": "HEAX", "iata": "AAC", "name": "El Arish International Airport", "city": "El Arish", "country": "EG", "lat": 31.0733, "lon": 33.8358 },
+        { "icao": "HEBA", "iata": "HBE", "name": "Borg El Arab Airport", "city": "Alexandria", "country": "EG", "lat": 30.9177, "lon": 29.6964 },
+        { "icao": "HEBL", "iata": "BFS", "name": "Beni Suef Airport", "city": "Beni Suef", "country": "EG", "lat": 29.2081, "lon": 31.0163 },
+        { "icao": "HEDK", "iata": "DAK", "name": "Dakhla Oasis Airport", "city": "Dakhla", "country": "EG", "lat": 25.4133, "lon": 29.0019 },
+        { "icao": "HEKG", "iata": "UVL", "name": "Kharga Airport", "city": "Kharga", "country": "EG", "lat": 25.4714, "lon": 30.5833 },
+        { "icao": "HEMM", "iata": "MUH", "name": "Mersa Matruh Airport", "city": "Mersa Matruh", "country": "EG", "lat": 31.3253, "lon": 27.2217 },
+        { "icao": "HEOW", "iata": "GSQ", "name": "Shark El Oweinat Airport", "city": "Shark El Oweinat", "country": "EG", "lat": 22.5857, "lon": 28.7158 },
+        { "icao": "HEPS", "iata": "PSD", "name": "Port Said Airport", "city": "Port Said", "country": "EG", "lat": 31.2794, "lon": 32.2408 },
+        { "icao": "HESN", "iata": "ASW", "name": "Aswan International Airport", "city": "Aswan", "country": "EG", "lat": 23.9644, "lon": 32.8200 },
+        { "icao": "HESO", "iata": "SEW", "name": "Siwa Oasis Airport", "city": "Siwa", "country": "EG", "lat": 29.3456, "lon": 25.3242 },
+        { "icao": "HEST", "iata": "SKV", "name": "St Catherine International Airport", "city": "St Catherine", "country": "EG", "lat": 28.6853, "lon": 34.0625 },
+        { "icao": "HETB", "iata": "", "name": "Taba International Airport", "city": "Taba", "country": "EG", "lat": 29.5878, "lon": 34.7781 }
+      ]
+    },
+    {
+      "icao": "UBBA",
+      "name": "Baku FIR",
+      "geojsonCode": "UBBA",
+      "airports": [
+        { "icao": "UBBB", "iata": "GYD", "name": "Heydar Aliyev International Airport", "city": "Baku", "country": "AZ", "lat": 40.4675, "lon": 50.0467 },
+        { "icao": "UBEE", "iata": "GBB", "name": "Gabala International Airport", "city": "Gabala", "country": "AZ", "lat": 40.8267, "lon": 47.7125 },
+        { "icao": "UBBY", "iata": "NAJ", "name": "Nakhchivan International Airport", "city": "Nakhchivan", "country": "AZ", "lat": 39.1889, "lon": 45.4584 },
+        { "icao": "UBBG", "iata": "GNJ", "name": "Ganja International Airport", "city": "Ganja", "country": "AZ", "lat": 40.7377, "lon": 46.3176 },
+        { "icao": "UBBL", "iata": "LLK", "name": "Lankaran International Airport", "city": "Lankaran", "country": "AZ", "lat": 38.7464, "lon": 48.8181 },
+        { "icao": "UBBQ", "iata": "ZXT", "name": "Zabrat Airport", "city": "Zabrat", "country": "AZ", "lat": 40.4950, "lon": 50.0117 }
+      ]
+    }
+  ]
+}

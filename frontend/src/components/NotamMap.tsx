@@ -1,9 +1,10 @@
-import React, { useMemo, useCallback, useState, useRef, memo } from 'react';
+import React, { useMemo, useCallback, useState, useRef, memo, useEffect } from 'react';
 // @ts-ignore
-import Map, { Source, Layer, MapRef } from 'react-map-gl/maplibre';
+import Map, { Source, Layer, MapRef, Popup } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { FirInfo, LocationNotams, NotamStatus, FirStatusItem } from '../types';
+import AirportSearchBar from './AirportSearchBar';
 
 interface NotamMapProps {
     geoJson: GeoJSON.FeatureCollection | null;
@@ -62,12 +63,104 @@ const MAP_STYLE: any = {
 };
 
 const MAP_PROJECTION: any = { type: 'globe' };
-const INTERACTIVE_LAYER_IDS = ['fir-fills'];
+const INTERACTIVE_LAYER_IDS = ['fir-fills', 'airport-hit-area'];
 const MAP_CONTAINER_STYLE = { width: '100%', height: '100%', background: 'transparent' };
+
+interface AirportPoint {
+    icao: string;
+    iata?: string;
+    name: string;
+    city?: string;
+    country?: string;
+    lat: number;
+    lon: number;
+}
+
+interface FirAirportGroup {
+    icao: string;
+    name: string;
+    geojsonCode?: string;
+    airports: AirportPoint[];
+}
+
+interface FirAirportsData {
+    firs: FirAirportGroup[];
+}
+
+interface SelectedAirport {
+    icao: string;
+    iata?: string;
+    name: string;
+    city?: string;
+    country?: string;
+    firIcao: string;
+    firName: string;
+    coordinates: [number, number];
+}
+
+const pointInRing = (point: [number, number], ring: number[][]): boolean => {
+    const [x, y] = point;
+    let inside = false;
+
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        const xi = ring[i][0];
+        const yi = ring[i][1];
+        const xj = ring[j][0];
+        const yj = ring[j][1];
+
+        const intersects = ((yi > y) !== (yj > y)) &&
+            (x < ((xj - xi) * (y - yi)) / ((yj - yi) || Number.EPSILON) + xi);
+        if (intersects) inside = !inside;
+    }
+
+    return inside;
+};
+
+const isPointInGeometry = (point: [number, number], geometry: GeoJSON.Geometry): boolean => {
+    if (geometry.type === 'Polygon') {
+        const [outer, ...holes] = geometry.coordinates as number[][][];
+        if (!outer || !pointInRing(point, outer)) return false;
+        return !holes.some(hole => pointInRing(point, hole));
+    }
+
+    if (geometry.type === 'MultiPolygon') {
+        return (geometry.coordinates as number[][][][]).some((polygon) => {
+            const [outer, ...holes] = polygon;
+            if (!outer || !pointInRing(point, outer)) return false;
+            return !holes.some(hole => pointInRing(point, hole));
+        });
+    }
+
+    return false;
+};
 
 const NotamMap: React.FC<NotamMapProps> = memo(({ geoJson, firs, firData, notamData: _notamData, loading, activeFilter = 'all', onFirClick }) => {
     const mapRef = useRef<MapRef>(null);
     const [hoverInfo, setHoverInfo] = useState<{ feature: any, x: number, y: number } | null>(null);
+    const [airportData, setAirportData] = useState<FirAirportsData | null>(null);
+    const [selectedAirport, setSelectedAirport] = useState<SelectedAirport | null>(null);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadAirports = async () => {
+            try {
+                const airportsUrl = `${import.meta.env.BASE_URL}fir_airports.json`;
+                const res = await fetch(airportsUrl);
+                if (!res.ok) return;
+                const json = await res.json() as FirAirportsData;
+                if (isMounted) setAirportData(json);
+            } catch {
+                // Keep map functional even if airport overlay data fails to load.
+            }
+        };
+
+        loadAirports();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
     
     const geoLookup = useMemo(() => {
         const map: Record<string, string[]> = {};
@@ -151,6 +244,100 @@ const NotamMap: React.FC<NotamMapProps> = memo(({ geoJson, firs, firData, notamD
         return { ...geoJson, features };
     }, [geoJson, featureStatusMap, loading, activeFilter, geoLookup]);
 
+    const airportGeoJson = useMemo<GeoJSON.FeatureCollection | null>(() => {
+        if (!airportData?.firs?.length || !geoJson?.features?.length) return null;
+
+        const firMetaByIcao = new globalThis.Map<string, FirInfo>();
+        firs.forEach((fir) => firMetaByIcao.set(fir.icao, fir));
+
+        const firFeaturesByGeoCode = new globalThis.Map<string, GeoJSON.Feature[]>();
+        geoJson.features.forEach((feature) => {
+            const code = feature.properties?.icaocode as string | undefined;
+            if (!code) return;
+            const list = firFeaturesByGeoCode.get(code) ?? [];
+            list.push(feature);
+            firFeaturesByGeoCode.set(code, list);
+        });
+
+        const features: GeoJSON.Feature[] = [];
+
+        airportData.firs.forEach((group) => {
+            const firMeta = firMetaByIcao.get(group.icao);
+            const geoCode = firMeta?.geojsonCode || group.geojsonCode || group.icao;
+            const firFeatures = firFeaturesByGeoCode.get(geoCode) ?? [];
+
+            group.airports.forEach((airport) => {
+                if (typeof airport.lon !== 'number' || typeof airport.lat !== 'number') return;
+                const point: [number, number] = [airport.lon, airport.lat];
+
+                const isInsideAssociatedFir = firFeatures.length > 0
+                    ? firFeatures.some((firFeature: GeoJSON.Feature) => {
+                        if (!firFeature.geometry) return false;
+                        return isPointInGeometry(point, firFeature.geometry);
+                    })
+                    : true;
+
+                if (!isInsideAssociatedFir) return;
+
+                features.push({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: point,
+                    },
+                    properties: {
+                        type: 'airport',
+                        icao: airport.icao,
+                        iata: airport.iata || '',
+                        name: airport.name,
+                        city: airport.city || '',
+                        country: airport.country || '',
+                        firIcao: group.icao,
+                        firName: group.name || firMeta?.name || group.icao,
+                    },
+                });
+            });
+        });
+
+        return {
+            type: 'FeatureCollection',
+            features,
+        };
+    }, [airportData, geoJson, firs]);
+
+    const flattenedAirports = useMemo(() => {
+        if (!airportData?.firs) return [];
+        return airportData.firs.flatMap(group => 
+            group.airports.map(a => ({
+                ...a,
+                firIcao: group.icao,
+                firName: group.name
+            }))
+        );
+    }, [airportData]);
+
+    const handleAirportSearch = useCallback((airport: any) => {
+        if (!mapRef.current) return;
+
+        mapRef.current.flyTo({
+            center: [airport.lon, airport.lat],
+            zoom: 8,
+            duration: 3000,
+            essential: true
+        });
+
+        setSelectedAirport({
+            icao: airport.icao,
+            iata: airport.iata,
+            name: airport.name,
+            city: airport.city,
+            country: airport.country,
+            firIcao: airport.firIcao,
+            firName: airport.firName,
+            coordinates: [airport.lon, airport.lat]
+        });
+    }, []);
+
     const onHover = useCallback((event: any) => {
         const { features, point } = event;
         const hoveredFeature = features && features[0];
@@ -166,6 +353,23 @@ const NotamMap: React.FC<NotamMapProps> = memo(({ geoJson, firs, firData, notamD
     const onClick = useCallback((event: any) => {
         const feature = event.features && event.features[0];
         if (feature) {
+            if (feature.properties?.type === 'airport') {
+                const coords = feature.geometry?.coordinates as [number, number] | undefined;
+                if (!coords) return;
+
+                setSelectedAirport({
+                    icao: String(feature.properties?.icao || ''),
+                    iata: String(feature.properties?.iata || ''),
+                    name: String(feature.properties?.name || 'Airport'),
+                    city: String(feature.properties?.city || ''),
+                    country: String(feature.properties?.country || ''),
+                    firIcao: String(feature.properties?.firIcao || ''),
+                    firName: String(feature.properties?.firName || ''),
+                    coordinates: coords,
+                });
+                return;
+            }
+
             const icaoCode = feature.properties?.icaocode;
             const targetIcaos = icaoCode ? geoLookup[icaoCode] : [];
             if (targetIcaos && targetIcaos.length > 0) onFirClick?.(targetIcaos[0]);
@@ -176,6 +380,43 @@ const NotamMap: React.FC<NotamMapProps> = memo(({ geoJson, firs, firData, notamD
         if (!hoverInfo) return null;
 
         const feature = hoverInfo.feature;
+
+        if (feature.properties?.type === 'airport') {
+            const airportName = feature.properties?.name as string;
+            const airportIcao = feature.properties?.icao as string;
+            const airportIata = feature.properties?.iata as string;
+            const city = feature.properties?.city as string;
+            const country = feature.properties?.country as string;
+            const firName = feature.properties?.firName as string;
+            const firIcao = feature.properties?.firIcao as string;
+
+            return (
+                <div
+                    className="pointer-events-none absolute z-[1000]"
+                    style={{
+                        left: hoverInfo.x,
+                        top: hoverInfo.y,
+                        transform: 'translate(-50%, calc(-100% - 14px))',
+                    }}
+                >
+                    <div className="relative overflow-hidden rounded-xl border border-cyan-400/25 bg-slate-950/95 shadow-[0_8px_32px_rgba(6,182,212,0.25)] backdrop-blur-xl"
+                        style={{ minWidth: '220px', maxWidth: '280px' }}
+                    >
+                        <div className="h-[2.5px] w-full bg-cyan-400/80" />
+                        <div className="px-3.5 py-3">
+                            <p className="truncate text-[13px] font-semibold leading-snug tracking-tight text-slate-100">{airportName}</p>
+                            <p className="mt-0.5 font-mono text-[10px] tracking-[0.1em] text-cyan-300">{airportIcao}{airportIata ? ` / ${airportIata}` : ''}</p>
+                            <p className="mt-1 text-[10.5px] text-slate-300">{city}{country ? `, ${country}` : ''}</p>
+                            <div className="my-2 h-px bg-white/[0.06]" />
+                            <p className="text-[10.5px] text-slate-400">Associated FIR: <span className="text-slate-200">{firName} ({firIcao})</span></p>
+                            <p className="mt-2 text-[9.5px] font-medium uppercase tracking-[0.1em] text-cyan-300">Click to open airport card</p>
+                        </div>
+                    </div>
+                    <div className="absolute left-1/2 h-0 w-0 -translate-x-1/2 border-x-[6px] border-t-[6px] border-x-transparent border-t-slate-950" />
+                </div>
+            );
+        }
+
         const icaoCode = feature.properties?.icaocode;
         const targetIcaos = icaoCode ? geoLookup[icaoCode] : [];
         if (!targetIcaos || targetIcaos.length === 0) return null;
@@ -341,7 +582,116 @@ const NotamMap: React.FC<NotamMapProps> = memo(({ geoJson, firs, firData, notamD
                         />
                     </Source>
                 )}
+                {airportGeoJson && (
+                    <Source id="airports" type="geojson" data={airportGeoJson as any}>
+                        <Layer
+                            id="airport-hit-area"
+                            type="circle"
+                            paint={{
+                                'circle-radius': [
+                                    'interpolate',
+                                    ['linear'],
+                                    ['zoom'],
+                                    2, 10,
+                                    5, 12,
+                                    8, 14
+                                ],
+                                'circle-color': 'rgba(0,0,0,0)',
+                            }}
+                        />
+                        <Layer
+                            id="airport-marker-glow"
+                            type="circle"
+                            paint={{
+                                'circle-radius': [
+                                    'interpolate',
+                                    ['linear'],
+                                    ['zoom'],
+                                    2, 8,
+                                    5, 12,
+                                    8, 16
+                                ],
+                                'circle-color': '#06b6d4',
+                                'circle-opacity': [
+                                    'interpolate',
+                                    ['linear'],
+                                    ['zoom'],
+                                    2, 0.15,
+                                    5, 0.1,
+                                    8, 0.05
+                                ],
+                                'circle-blur': 0.8
+                            }}
+                        />
+                        <Layer
+                            id="airport-marker-outer"
+                            type="circle"
+                            paint={{
+                                'circle-radius': [
+                                    'interpolate',
+                                    ['linear'],
+                                    ['zoom'],
+                                    2, 4,
+                                    5, 6,
+                                    8, 8
+                                ],
+                                'circle-color': 'rgba(6, 182, 212, 0.1)',
+                                'circle-stroke-width': 1,
+                                'circle-stroke-color': 'rgba(6, 182, 212, 0.3)',
+                            }}
+                        />
+                        <Layer
+                            id="airport-marker-core"
+                            type="circle"
+                            paint={{
+                                'circle-radius': [
+                                    'interpolate',
+                                    ['linear'],
+                                    ['zoom'],
+                                    2, 1.8,
+                                    5, 2.5,
+                                    8, 3.5
+                                ],
+                                'circle-color': '#fff',
+                                'circle-stroke-width': [
+                                    'interpolate',
+                                    ['linear'],
+                                    ['zoom'],
+                                    2, 1,
+                                    5, 1.5,
+                                    8, 2
+                                ],
+                                'circle-stroke-color': '#06b6d4',
+                            }}
+                        />
+                        <Layer
+                            id="airport-labels"
+                            type="symbol"
+                            minzoom={3}
+                            layout={{
+                                'text-field': ['get', 'icao'],
+                                'text-font': ['Open Sans Semibold'],
+                                'text-size': [
+                                    'interpolate',
+                                    ['linear'],
+                                    ['zoom'],
+                                    4, 9,
+                                    8, 11
+                                ],
+                                'text-offset': [0, 1.4],
+                                'text-anchor': 'top',
+                                'text-allow-overlap': true,
+                            }}
+                            paint={{
+                                'text-color': '#f1f5f9',
+                                'text-halo-color': '#0f172a',
+                                'text-halo-width': 1.6,
+                            }}
+                        />
+                    </Source>
+                )}
                 {renderTooltip()}
+                <AirportSearchBar airports={flattenedAirports} onSelect={handleAirportSearch} />
             </Map>
         </div>
     );
