@@ -2,7 +2,8 @@ import React, { useMemo, useState } from 'react';
 import NotamMap from '../components/NotamMap';
 import FIRDetailModal from '../components/FIRDetailModal';
 import NotamSidebar from '../components/NotamSidebar';
-import { FirInfo, FirStatusItem, LocationNotams, NotamStatus } from '../types';
+import AirportWeatherSidebar from '../components/AirportWeatherSidebar';
+import { FirInfo, FirStatusItem, LocationNotams, NotamStatus, SelectedAirport } from '../types';
 
 interface HomeProps {
     geoJson: GeoJSON.FeatureCollection | null;
@@ -16,6 +17,7 @@ const Home: React.FC<HomeProps> = ({ geoJson, firs, firData, notamData, loading 
     const [statusFilter, setStatusFilter] = useState<NotamStatus | 'all' | 'escat' | 'interference'>('all');
     const [selectedFirIcao, setSelectedFirIcao] = useState<string | null>(null);
     const [selectedNotamId, setSelectedNotamId] = useState<string | null>(null);
+    const [selectedAirport, setSelectedAirport] = useState<SelectedAirport | null>(null);
 
     // Use the patched firData (which reflects our pipeline status) for consistent counts
     const counts = useMemo(() => {
@@ -130,8 +132,15 @@ const Home: React.FC<HomeProps> = ({ geoJson, firs, firData, notamData, loading 
                     loading={loading}
                     activeFilter={statusFilter}
                     onFirClick={handleFirClick}
+                    // onAirportClick={setSelectedAirport}
                 />
             </div>
+
+            {/* Airport Weather Sidebar (Overlay on the left) */}
+            <AirportWeatherSidebar 
+                airport={selectedAirport} 
+                onClose={() => setSelectedAirport(null)} 
+            />
 
             {/* Side Information Panel */}
             <NotamSidebar

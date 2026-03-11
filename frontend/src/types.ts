@@ -86,3 +86,14 @@ export interface ConfigResponse {
     config: SystemConfig;
     timestamp: number;
 }
+
+export interface SelectedAirport {
+    icao: string;
+    iata?: string;
+    name: string;
+    city?: string;
+    country?: string;
+    firIcao: string;
+    firName: string;
+    coordinates: [number, number];
+}

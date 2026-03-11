@@ -3,7 +3,7 @@ import React, { useMemo, useCallback, useState, useRef, memo, useEffect } from '
 import Map, { Source, Layer, MapRef, Popup } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { FirInfo, LocationNotams, NotamStatus, FirStatusItem } from '../types';
+import { FirInfo, LocationNotams, NotamStatus, FirStatusItem, SelectedAirport } from '../types';
 import AirportSearchBar from './AirportSearchBar';
 
 interface NotamMapProps {
@@ -14,6 +14,7 @@ interface NotamMapProps {
     loading: boolean;
     activeFilter?: NotamStatus | 'all' | 'escat' | 'interference';
     onFirClick?: (firIcao: string) => void;
+    onAirportClick?: (airport: SelectedAirport) => void;
 }
 
 const STATUS_FILL: Record<NotamStatus, string> = {
@@ -66,6 +67,24 @@ const MAP_PROJECTION: any = { type: 'globe' };
 const INTERACTIVE_LAYER_IDS = ['fir-fills', 'airport-hit-area'];
 const MAP_CONTAINER_STYLE = { width: '100%', height: '100%', background: 'transparent' };
 
+const pointInRing = (point: [number, number], ring: number[][]): boolean => {
+    const [x, y] = point;
+    let inside = false;
+
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        const xi = ring[i][0];
+        const yi = ring[i][1];
+        const xj = ring[j][0];
+        const yj = ring[j][1];
+
+        const intersects = ((yi > y) !== (yj > y)) &&
+            (x < ((xj - xi) * (y - yi)) / ((yj - yi) || Number.EPSILON) + xi);
+        if (intersects) inside = !inside;
+    }
+
+    return inside;
+};
+
 interface AirportPoint {
     icao: string;
     iata?: string;
@@ -87,35 +106,6 @@ interface FirAirportsData {
     firs: FirAirportGroup[];
 }
 
-interface SelectedAirport {
-    icao: string;
-    iata?: string;
-    name: string;
-    city?: string;
-    country?: string;
-    firIcao: string;
-    firName: string;
-    coordinates: [number, number];
-}
-
-const pointInRing = (point: [number, number], ring: number[][]): boolean => {
-    const [x, y] = point;
-    let inside = false;
-
-    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-        const xi = ring[i][0];
-        const yi = ring[i][1];
-        const xj = ring[j][0];
-        const yj = ring[j][1];
-
-        const intersects = ((yi > y) !== (yj > y)) &&
-            (x < ((xj - xi) * (y - yi)) / ((yj - yi) || Number.EPSILON) + xi);
-        if (intersects) inside = !inside;
-    }
-
-    return inside;
-};
-
 const isPointInGeometry = (point: [number, number], geometry: GeoJSON.Geometry): boolean => {
     if (geometry.type === 'Polygon') {
         const [outer, ...holes] = geometry.coordinates as number[][][];
@@ -134,11 +124,11 @@ const isPointInGeometry = (point: [number, number], geometry: GeoJSON.Geometry):
     return false;
 };
 
-const NotamMap: React.FC<NotamMapProps> = memo(({ geoJson, firs, firData, notamData: _notamData, loading, activeFilter = 'all', onFirClick }) => {
+const NotamMap: React.FC<NotamMapProps> = memo(({ geoJson, firs, firData, notamData: _notamData, loading, activeFilter = 'all', onFirClick, onAirportClick }) => {
     const mapRef = useRef<MapRef>(null);
     const [hoverInfo, setHoverInfo] = useState<{ feature: any, x: number, y: number } | null>(null);
     const [airportData, setAirportData] = useState<FirAirportsData | null>(null);
-    const [selectedAirport, setSelectedAirport] = useState<SelectedAirport | null>(null);
+    const [selectedAirportInternal, setSelectedAirportInternal] = useState<SelectedAirport | null>(null);
 
     useEffect(() => {
         let isMounted = true;
@@ -326,7 +316,7 @@ const NotamMap: React.FC<NotamMapProps> = memo(({ geoJson, firs, firData, notamD
             essential: true
         });
 
-        setSelectedAirport({
+        const airportObj: SelectedAirport = {
             icao: airport.icao,
             iata: airport.iata,
             name: airport.name,
@@ -335,8 +325,10 @@ const NotamMap: React.FC<NotamMapProps> = memo(({ geoJson, firs, firData, notamD
             firIcao: airport.firIcao,
             firName: airport.firName,
             coordinates: [airport.lon, airport.lat]
-        });
-    }, []);
+        };
+        setSelectedAirportInternal(airportObj);
+        onAirportClick?.(airportObj);
+    }, [onAirportClick]);
 
     const onHover = useCallback((event: any) => {
         const { features, point } = event;
@@ -357,7 +349,7 @@ const NotamMap: React.FC<NotamMapProps> = memo(({ geoJson, firs, firData, notamD
                 const coords = feature.geometry?.coordinates as [number, number] | undefined;
                 if (!coords) return;
 
-                setSelectedAirport({
+                const airportObj: SelectedAirport = {
                     icao: String(feature.properties?.icao || ''),
                     iata: String(feature.properties?.iata || ''),
                     name: String(feature.properties?.name || 'Airport'),
@@ -366,7 +358,9 @@ const NotamMap: React.FC<NotamMapProps> = memo(({ geoJson, firs, firData, notamD
                     firIcao: String(feature.properties?.firIcao || ''),
                     firName: String(feature.properties?.firName || ''),
                     coordinates: coords,
-                });
+                };
+                setSelectedAirportInternal(airportObj);
+                onAirportClick?.(airportObj);
                 return;
             }
 
@@ -554,6 +548,28 @@ const NotamMap: React.FC<NotamMapProps> = memo(({ geoJson, firs, firData, notamD
                     if (mapRef.current) mapRef.current.getCanvas().style.cursor = '';
                 }}
                 onClick={onClick}
+                onLoad={(e) => {
+                    const map = e.target;
+                    
+                    // Create a custom airport icon (airplane)
+                    const svgString = `
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="12" cy="12" r="9" stroke="#06b6d4" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="12" cy="12" r="4" stroke="#06b6d4" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M12 12H12.01" stroke="#06b6d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+                    `;
+                    
+                    const blob = new Blob([svgString], { type: 'image/svg+xml' });
+                    const url = URL.createObjectURL(blob);
+                    const img = new Image();
+                    img.src = url;
+                    img.onload = () => {
+                        if (!map.hasImage('airport-icon')) {
+                            map.addImage('airport-icon', img);
+                        }
+                    };
+                }}
                 projection={MAP_PROJECTION}
             >
                 {styledGeoJson && (
@@ -582,93 +598,31 @@ const NotamMap: React.FC<NotamMapProps> = memo(({ geoJson, firs, firData, notamD
                         />
                     </Source>
                 )}
+                
                 {airportGeoJson && (
                     <Source id="airports" type="geojson" data={airportGeoJson as any}>
                         <Layer
                             id="airport-hit-area"
                             type="circle"
                             paint={{
-                                'circle-radius': [
-                                    'interpolate',
-                                    ['linear'],
-                                    ['zoom'],
-                                    2, 10,
-                                    5, 12,
-                                    8, 14
-                                ],
+                                'circle-radius': 14,
                                 'circle-color': 'rgba(0,0,0,0)',
                             }}
                         />
                         <Layer
-                            id="airport-marker-glow"
-                            type="circle"
-                            paint={{
-                                'circle-radius': [
-                                    'interpolate',
-                                    ['linear'],
-                                    ['zoom'],
-                                    2, 8,
-                                    5, 12,
-                                    8, 16
-                                ],
-                                'circle-color': '#06b6d4',
-                                'circle-opacity': [
-                                    'interpolate',
-                                    ['linear'],
-                                    ['zoom'],
-                                    2, 0.15,
-                                    5, 0.1,
-                                    8, 0.05
-                                ],
-                                'circle-blur': 0.8
-                            }}
-                        />
-                        <Layer
-                            id="airport-marker-outer"
-                            type="circle"
-                            paint={{
-                                'circle-radius': [
-                                    'interpolate',
-                                    ['linear'],
-                                    ['zoom'],
-                                    2, 4,
-                                    5, 6,
-                                    8, 8
-                                ],
-                                'circle-color': 'rgba(6, 182, 212, 0.1)',
-                                'circle-stroke-width': 1,
-                                'circle-stroke-color': 'rgba(6, 182, 212, 0.3)',
-                            }}
-                        />
-                        <Layer
-                            id="airport-marker-core"
-                            type="circle"
-                            paint={{
-                                'circle-radius': [
-                                    'interpolate',
-                                    ['linear'],
-                                    ['zoom'],
-                                    2, 1.8,
-                                    5, 2.5,
-                                    8, 3.5
-                                ],
-                                'circle-color': '#fff',
-                                'circle-stroke-width': [
-                                    'interpolate',
-                                    ['linear'],
-                                    ['zoom'],
-                                    2, 1,
-                                    5, 1.5,
-                                    8, 2
-                                ],
-                                'circle-stroke-color': '#06b6d4',
-                            }}
-                        />
-                        <Layer
-                            id="airport-labels"
+                            id="airport-icons"
                             type="symbol"
-                            minzoom={3}
                             layout={{
+                                'icon-image': 'airport-icon',
+                                'icon-size': [
+                                    'interpolate',
+                                    ['linear'],
+                                    ['zoom'],
+                                    2, 0.6,
+                                    5, 0.8,
+                                    8, 1.0
+                                ],
+                                'icon-allow-overlap': true,
                                 'text-field': ['get', 'icao'],
                                 'text-font': ['Open Sans Semibold'],
                                 'text-size': [
@@ -678,18 +632,26 @@ const NotamMap: React.FC<NotamMapProps> = memo(({ geoJson, firs, firData, notamD
                                     4, 9,
                                     8, 11
                                 ],
-                                'text-offset': [0, 1.4],
+                                'text-offset': [0, 1.5],
                                 'text-anchor': 'top',
-                                'text-allow-overlap': true,
+                                'text-allow-overlap': false,
                             }}
                             paint={{
                                 'text-color': '#f1f5f9',
                                 'text-halo-color': '#0f172a',
                                 'text-halo-width': 1.6,
+                                'icon-opacity': [
+                                    'interpolate',
+                                    ['linear'],
+                                    ['zoom'],
+                                    2, 0.8,
+                                    5, 1
+                                ]
                             }}
                         />
                     </Source>
                 )}
+               
                 {renderTooltip()}
                 <AirportSearchBar airports={flattenedAirports} onSelect={handleAirportSearch} />
             </Map>
