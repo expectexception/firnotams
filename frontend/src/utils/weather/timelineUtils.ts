@@ -34,82 +34,124 @@ export function resolveTafTime(token: string, issueTime: Date) {
 }
 
 /**
- * Resolves a date string into an absolute Date object.
+ * Resolves a date string into an absolute Date object with month rollover protection.
  */
-export function resolveAbsoluteTime(day: string, hour: string, refDate: Date) {
-    const d = parseInt(day);
-    const h = parseInt(hour);
-    const res = new Date(refDate);
-    res.setUTCMinutes(0); res.setUTCSeconds(0); res.setUTCMilliseconds(0);
-    res.setUTCHours(h);
-    
-    if (d < refDate.getUTCDate() && refDate.getUTCDate() > 25) res.setUTCMonth(res.getUTCMonth() + 1);
-    else if (d > refDate.getUTCDate() && refDate.getUTCDate() < 5) res.setUTCMonth(res.getUTCMonth() - 1);
-    
-    res.setUTCDate(d);
-    return res;
-}
+export function resolveAbsoluteTime(dayStr: string, hourStr: string, referenceDate: Date = new Date()) {
+    const day = parseInt(dayStr, 10);
+    const hour = parseInt(hourStr, 10);
 
-/**
- * Parses a validity period (e.g., 2512/2618) into start and end Dates.
- */
-export function parseValidPeriod(token: string, issueTime: Date) {
-    if (!token || !token.includes('/') || !issueTime) return { start: null, end: null };
-    const [startRaw, endRaw] = token.split('/');
-    
-    // Valid period is DDHH (4 digits)
-    const resolve = (raw: string) => {
-        const d = parseInt(raw.slice(0, 2));
-        const h = parseInt(raw.slice(2, 4));
-        const res = new Date(issueTime);
-        res.setUTCMinutes(0); res.setUTCSeconds(0); res.setUTCMilliseconds(0);
-        res.setUTCHours(h);
-        
-        if (d < issueTime.getUTCDate() && issueTime.getUTCDate() > 25) res.setUTCMonth(res.getUTCMonth() + 1);
-        else if (d > issueTime.getUTCDate() && issueTime.getUTCDate() < 5) res.setUTCMonth(res.getUTCMonth() - 1);
-        
-        res.setUTCDate(d);
-        return res;
-    };
+    const date = new Date(referenceDate);
+    date.setUTCDate(day);
+    date.setUTCHours(hour, 0, 0, 0);
 
-    return { start: resolve(startRaw), end: resolve(endRaw) };
-}
+    const diff = date.getTime() - referenceDate.getTime();
+    const daysDiff = diff / (1000 * 60 * 60 * 24);
 
-/**
- * Enriches TAF phases with absolute start/end times.
- */
-export function enrichPhasesWithTimeline(sections: any[], issueTime: Date) {
-    if (!sections || !issueTime) return [];
-
-    let baseStart = issueTime;
-    let baseEnd = new Date(issueTime.getTime() + 30 * 60 * 60 * 1000); // Default 30h
-
-    // Find main validity
-    const header = sections.find(s => s.type === 'initial');
-    const validToken = header?.tokens?.find((t: any) => t.type === 'validPeriod');
-    if (validToken) {
-        const { start, end } = parseValidPeriod(validToken.value, issueTime);
-        if (start) baseStart = start;
-        if (end) baseEnd = end;
+    if (daysDiff < -15) {
+        date.setUTCMonth(date.getUTCMonth() + 1);
+    } else if (daysDiff > 15) {
+        date.setUTCMonth(date.getUTCMonth() - 1);
     }
 
-    return sections.map(section => {
-        let start = baseStart;
-        let end = baseEnd;
+    return date;
+}
 
-        const fmToken = section.tokens.find((t: any) => t.type === 'fm');
-        if (fmToken) {
-            const resolved = resolveTafTime(fmToken.value.slice(2), issueTime);
-            if (resolved) start = resolved;
+/**
+ * Enriches TAF phases with absolute start/end times and identifies baselines/overlays.
+ */
+export function enrichPhasesWithTimeline(phases: any[], issueTimeStamp: string, validPeriod: string) {
+    if (!validPeriod) return phases;
+
+    const now = new Date();
+    let refDate = now;
+    if (issueTimeStamp) {
+        const match = issueTimeStamp.match(/^(\d{2})(\d{2})(\d{2})Z$/);
+        if (match) {
+            refDate = resolveAbsoluteTime(match[1], match[2], now);
+            refDate.setUTCMinutes(parseInt(match[3]));
         }
+    }
 
-        const periodToken = section.tokens.find((t: any) => t.type === 'timePeriod');
-        if (periodToken) {
-            const { start: ps, end: pe } = parseValidPeriod(periodToken.value, issueTime);
-            if (ps) start = ps;
-            if (pe) end = pe;
-        }
+    const [startStr, endStr] = validPeriod.split('/');
+    const baseStart = resolveAbsoluteTime(startStr.slice(0, 2), startStr.slice(2, 4), refDate);
+    const baseEnd = resolveAbsoluteTime(endStr.slice(0, 2), endStr.slice(2, 4), baseStart);
 
-        return { ...section, validStart: start, validEnd: end };
+    const enrichedPhases = phases.map(p => ({ ...p, tokens: [...(p.tokens || [])] }));
+
+    const baselines: any[] = [];
+    const overlays: any[] = [];
+
+    enrichedPhases.forEach(phase => {
+        const isFm = phase.tokens[0]?.type === 'fm';
+        const isInitial = !isFm && (phase.type === 'initial' || phase.tokens[0]?.idx === 0);
+
+        let timelineType = 'overlay';
+        if (isInitial || isFm) timelineType = 'baseline';
+
+        phase.timelineType = timelineType;
+        if (timelineType === 'baseline') baselines.push(phase);
+        else overlays.push(phase);
     });
+
+    // Resolve Baselines (Initial -> FM1 -> FM2)
+    for (let i = 0; i < baselines.length; i++) {
+        const phase = baselines[i];
+        let pStart = baseStart;
+        let pEnd;
+
+        if (i > 0 || phase.tokens[0]?.type === 'fm') {
+            const fmToken = phase.tokens.find((t: any) => t.type === 'fm');
+            if (fmToken) {
+                const match = fmToken.value.match(/^FM(\d{2})(\d{2})(\d{2})$/);
+                if (match) {
+                    pStart = resolveAbsoluteTime(match[1], match[2], baseStart);
+                    pStart.setUTCMinutes(parseInt(match[3]));
+                }
+            }
+        }
+
+        if (i < baselines.length - 1) {
+            const nextPhase = baselines[i + 1];
+            const nextFm = nextPhase.tokens.find((t: any) => t.type === 'fm');
+            if (nextFm) {
+                const match = nextFm.value.match(/^FM(\d{2})(\d{2})(\d{2})$/);
+                if (match) {
+                    const nextStart = resolveAbsoluteTime(match[1], match[2], baseStart);
+                    nextStart.setUTCMinutes(parseInt(match[3]));
+                    pEnd = nextStart;
+                }
+            }
+        }
+
+        if (!pEnd) pEnd = baseEnd;
+        phase.validStart = pStart;
+        phase.validEnd = pEnd;
+    }
+
+    // Resolve Overlays (TEMPO, BECMG, PROB)
+    overlays.forEach(phase => {
+        const periodToken = phase.tokens.find((t: any) => t.type === 'timePeriod');
+        let pStart = baseStart;
+        let pEnd = baseEnd;
+
+        if (periodToken) {
+            const [s, e] = periodToken.value.split('/');
+            pStart = resolveAbsoluteTime(s.slice(0, 2), s.slice(2, 4), baseStart);
+            pEnd = resolveAbsoluteTime(e.slice(0, 2), e.slice(2, 4), pStart);
+        }
+
+        phase.validStart = pStart;
+        phase.validEnd = pEnd;
+
+        // BECMG Activation Rules
+        if (phase.type === 'becmg' && pStart && pEnd) {
+            // Trend analysis (deteriorating/improving) is done in the component 
+            // where visibility/ceiling parsing utils are integrated.
+            // We initialize properties here.
+            phase.becmgDeteriorating = false;
+            phase.becmgImproving = false;
+        }
+    });
+
+    return enrichedPhases;
 }

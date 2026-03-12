@@ -22,7 +22,7 @@ const AirportWeatherSidebar: React.FC<AirportWeatherSidebarProps> = ({ airport, 
     if (!airport) return null;
 
     return (
-        <div className="absolute left-4 top-4 bottom-4 z-[1001] w-80 md:w-96 flex flex-col pointer-events-none">
+        <div className="absolute left-4 top-4 bottom-4 z-[1001] w-[calc(100%-2rem)] max-w-sm md:max-w-md lg:max-w-2xl flex flex-col pointer-events-none transition-all duration-500">
             <div className="flex-1 bg-slate-950/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col pointer-events-auto animate-in slide-in-from-left duration-500 ease-out fill-mode-forwards">
                 {/* Header */}
                 <div className="relative h-32 flex-shrink-0">

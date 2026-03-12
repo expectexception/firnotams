@@ -109,7 +109,7 @@ export default function LivePhaseFeed({
                 return (
                   <div key={token.idx} className="flex items-center gap-1.5 group/token relative">
                     <span className={`opacity-70 group-hover/token:opacity-100 text-slate-400`}>
-                      {getWeatherIcon(info.icon || 'HelpCircle', `w-3.5 h-3.5`)}
+                      {getWeatherIcon(info?.icon || 'HelpCircle', `w-3.5 h-3.5`)}
                     </span>
                     <span 
                         className={`text-slate-200 ${hazard ? (hazard.level === 'DANGER' ? 'text-red-400' : 'text-amber-400') : ''}`}

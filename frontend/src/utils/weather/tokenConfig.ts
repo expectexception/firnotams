@@ -100,6 +100,70 @@ export const TOKEN_INFO: Record<string, any> = {
     title: 'Forecast Visibility',
     icon: 'Eye',
     explain: (value: string) => `<strong>Visibility</strong>: ${value}`
+  },
+  skyCondition: {
+    title: 'Sky Condition',
+    icon: 'Cloudy',
+    explain: (value: string) => `<strong>Sky Condition</strong>: ${value}`
+  },
+  weather: {
+    title: 'Weather Phenomena',
+    icon: 'CloudRain',
+    explain: (value: string) => `<strong>Weather</strong>: ${value}`
+  },
+  nsw: {
+    title: 'No Significant Weather',
+    icon: 'Sun',
+    explain: () => '<strong>No significant weather</strong> is expected.'
+  },
+  cavok: {
+    title: 'CAVOK',
+    icon: 'Sun',
+    explain: () => '<strong>CAVOK</strong>: Ceiling and Visibility OK (Visibility 10km+, no cloud below 5000ft, no CB/TCU, no sig weather).'
+  },
+  windShear: {
+    title: 'Wind Shear',
+    icon: 'Wind',
+    explain: (value: string) => `<strong>Wind Shear</strong>: ${value}`
+  },
+  qnh: {
+    title: 'QNH',
+    icon: 'Waves',
+    explain: (value: string) => `<strong>QNH</strong>: ${value}`
+  },
+  nil: {
+    title: 'NIL',
+    icon: 'FileX',
+    explain: () => '<strong>NIL</strong>: No weather data available for this period.'
+  },
+  tempMax: {
+    title: 'Maximum Temperature',
+    icon: 'Thermometer',
+    explain: (value: string) => `<strong>Max Temp</strong>: ${value}`
+  },
+  tempMin: {
+    title: 'Minimum Temperature',
+    icon: 'Thermometer',
+    explain: (value: string) => `<strong>Min Temp</strong>: ${value}`
+  },
+  minAltimeter: {
+    title: 'Minimum Altimeter',
+    icon: 'Waves',
+    explain: (value: string) => `<strong>Min Altimeter</strong>: ${value}`
+  },
+  icing: {
+    title: 'Icing',
+    icon: 'Snowflake',
+    explain: (value: string) => `<strong>Icing</strong>: ${value}`
+  },
+  turbulence: {
+    title: 'Turbulence',
+    icon: 'Wind',
+    explain: (value: string) => `<strong>Turbulence</strong>: ${value}`
+  },
+  unknown: {
+    title: 'Unknown Token',
+    icon: 'HelpCircle',
+    explain: (value: string) => `Unknown token: <strong>${value}</strong>`
   }
-  // Simplified for now, can be expanded if needed
 };
